@@ -160,7 +160,7 @@ export default defineComponent({
         if (!status.success) {
           setTimeout(() => {
             this.customAlert("Login failed. Try Again!", "negative");
-          }, 1000);
+          }, 300);
         }
       } else {
         this.customAlert("Processing...", "ongoing", 50);
@@ -169,7 +169,7 @@ export default defineComponent({
           if (!status.success) {
             setTimeout(() => {
               this.customAlert("Registration failed!", "warning");
-            }, 1000);
+            }, 300);
           }
         } else {
           setTimeout(() => {

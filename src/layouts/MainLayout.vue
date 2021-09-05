@@ -72,20 +72,21 @@
                 <q-avatar color="primary" text-color="white" size="72px">
                   {{ userDetails.name.charAt(0) }}
                 </q-avatar>
-
                 <div class="text-body2 q-mt-md q-mb-xs text-center">
                   {{ userDetails.name }}
                 </div>
-
-                <q-btn
-                  color="primary"
-                  label="Logout"
-                  @click="logout"
-                  push
-                  ripple
-                  size="sm"
-                  v-close-popup
-                />
+                <q-menu>
+                  <q-btn
+                    color="text-grey"
+                    icon="logout"
+                    @click="logout"
+                    label="Logout"
+                    ripple
+                    flat
+                    size="sm"
+                    v-close-popup
+                  />
+                </q-menu>
               </div>
             </div>
           </q-menu>
