@@ -141,9 +141,9 @@ export default defineComponent({
   },
 
   methods: {
-    ...mapActions("firebase_auth", ["logoutUser", "firebaseUpdateUser"]),
-
+    ...mapActions("firebase_auth", ["logoutUser", "firebaseUpdateUser", "firebaseStopGettingUsers"]),
     ...mapActions("firebase_budget", ["firebaseStopGettingTransactions"]),
+
     updateInvisibility() {
       this.firebaseUpdateUser({
         userId: this.userDetails.userId,
@@ -153,6 +153,7 @@ export default defineComponent({
     },
     logout() {
       this.firebaseStopGettingTransactions();
+      this.firebaseStopGettingUsers()
       this.logoutUser();
     },
   },

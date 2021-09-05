@@ -1,3 +1,5 @@
+import { reactive } from "vue";
+
 function setUserDetails(state, payload) {
   state.userDetails = payload;
 }
@@ -14,10 +16,21 @@ function removeUser(state, payload) {
   delete state.users[payload.userId];
 }
 
+function clearUser(state, payload) {
+  state.users = reactive({});
+}
+
 function updateCurrentUser(state, payload) {
   Object.keys(payload).forEach((key) => {
     state.userDetails[key] = payload[key];
   });
 }
 
-export { setUserDetails, addUser, updateUser, removeUser, updateCurrentUser };
+export {
+  setUserDetails,
+  addUser,
+  updateUser,
+  removeUser,
+  clearUser,
+  updateCurrentUser,
+};

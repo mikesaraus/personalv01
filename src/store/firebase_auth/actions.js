@@ -15,6 +15,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { collections } from "../firebase_config";
+let usersRef;
 
 async function registerUser({}, payload) {
   let result = {};
@@ -106,7 +107,7 @@ function handleAuthStateChanged({ commit, dispatch, state }) {
 
 function firebaseGetUsers({ commit }) {
   const q = query(collection(firebaseDb, collections.users));
-  onSnapshot(q, (snapshot) => {
+  usersRef = onSnapshot(q, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
       const userDetails = change.doc.data();
       const userId = change.doc.id;
@@ -121,6 +122,13 @@ function firebaseGetUsers({ commit }) {
       }
     });
   });
+}
+
+function firebaseStopGettingUsers({ commit }) {
+  if (usersRef) {
+    usersRef();
+    commit("clearUser");
+  }
 }
 
 async function firebaseUpdateUser({ commit }, payload) {
@@ -152,4 +160,5 @@ export {
   firebaseGetUsers,
   firebaseUpdateUser,
   handleAuthStateChanged,
+  firebaseStopGettingUsers,
 };
