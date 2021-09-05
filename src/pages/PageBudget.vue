@@ -318,6 +318,14 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-page-scroller
+      position="bottom-right"
+      :scroll-offset="150"
+      :offset="[18, 18]"
+    >
+      <q-btn fab icon="keyboard_arrow_up" size="sm" color="accent" />
+    </q-page-scroller>
   </q-page>
 </template>
 
@@ -365,6 +373,7 @@ export default defineComponent({
   },
 
   computed: {
+    ...mapState("firebase_auth", ["userDetails"]),
     ...mapState("firebase_budget", ["transactions"]),
     ...mapGetters("firebase_budget", [
       "walletBalance",
@@ -390,6 +399,7 @@ export default defineComponent({
   },
 
   created() {
+    if (!Object.keys(this.userDetails).length) this.$router.push("/");
     this.timer = setInterval(() => {
       this.minuteTimer += 1;
     }, 200);
@@ -447,7 +457,7 @@ export default defineComponent({
       };
     },
     addNewTransaction() {
-      this.budgetAlert("Adding new transaction...", "ongoing", 50);
+      this.customAlert("Adding new transaction...", "ongoing", 50);
       if (
         this.newTransaction.money &&
         this.newTransaction.type &&
@@ -464,18 +474,18 @@ export default defineComponent({
         const status = this.firebaseAddTransaction(transaction);
         if (status) {
           setTimeout(() => {
-            this.budgetAlert("Transaction has been added.", "positive");
+            this.customAlert("Transaction has been added.", "positive");
           }, 300);
         } else {
           setTimeout(() => {
-            this.budgetAlert("Failed to add transaction.", "negative");
+            this.customAlert("Failed to add transaction.", "negative");
           }, 300);
         }
         this.resetNewTransaction();
       } else {
         this.transactionStatus = false;
         setTimeout(() => {
-          this.budgetAlert(
+          this.customAlert(
             "Failed! Plese complete all the details needed.",
             "warning"
           );
@@ -494,11 +504,11 @@ export default defineComponent({
           let status = this.firebaseDeleteTransaction(transaction);
           if (status) {
             setTimeout(() => {
-              this.budgetAlert("Transaction has been deleted.", "positive");
+              this.customAlert("Transaction has been deleted.", "positive");
             }, 100);
           } else {
             setTimeout(() => {
-              this.budgetAlert("Error deleting transaction.", "negative");
+              this.customAlert("Error deleting transaction.", "negative");
             }, 100);
           }
         });
@@ -520,7 +530,7 @@ export default defineComponent({
       });
       this.transactionStatus = true;
       setTimeout(() => {
-        this.budgetAlert("Transaction has been updated.", "positive");
+        this.customAlert("Transaction has been updated.", "positive");
       }, 300);
       this.resetNewTransaction();
     },
@@ -531,7 +541,7 @@ export default defineComponent({
         this.newTransaction.type = this.transactionTypes[1];
       }
     },
-    budgetAlert(message, type, timeout = 1000, position = null) {
+    customAlert(message, type, timeout = 1000, position = null) {
       if (!type || !message) return;
       let config = {
         type: type,

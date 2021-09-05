@@ -68,23 +68,42 @@ function firebaseStopGettingMessages({ commit }) {
 }
 
 async function firebaseSendMessage({}, payload) {
+  let result = {};
   const userId = this.state.firebase_auth.userDetails.userId;
   const myDoc = await addDoc(
     collection(firebaseDb, collections.chats, userId, payload.otherUserId),
     payload.message,
     { merge: true }
-  );
-  payload.message.from = "them";
-  setDoc(
-    doc(firebaseDb, collections.chats, payload.otherUserId, userId, myDoc.id),
-    payload.message,
-    { merge: true }
-  );
+  )
+    .then((response) => {
+      payload.message.from = "them";
+      setDoc(
+        doc(
+          firebaseDb,
+          collections.chats,
+          payload.otherUserId,
+          userId,
+          myDoc.id
+        ),
+        payload.message,
+        { merge: true }
+      )
+        .then((response2) => {
+          result = { success: true, response: response2 };
+        })
+        .catch((error) => {
+          result = { success: false, response: error };
+        });
+    })
+    .catch((error) => {
+      result = { success: false, response: error };
+    });
 }
 
-function firebaseDeleteMessage({}, payload) {
+async function firebaseDeleteMessage({}, payload) {
+  let result = {};
   const userId = this.state.firebase_auth.userDetails.userId;
-  deleteDoc(
+  await deleteDoc(
     doc(
       firebaseDb,
       collections.chats,
@@ -92,18 +111,32 @@ function firebaseDeleteMessage({}, payload) {
       payload.otherUserId,
       payload.messageId
     )
-  );
-  if (payload.deleteForEveryone) {
-    deleteDoc(
-      doc(
-        firebaseDb,
-        collections.chats,
-        payload.otherUserId,
-        userId,
-        payload.messageId
-      )
-    );
-  }
+  )
+    .then(async (response) => {
+      if (payload.deleteForEveryone) {
+        await deleteDoc(
+          doc(
+            firebaseDb,
+            collections.chats,
+            payload.otherUserId,
+            userId,
+            payload.messageId
+          )
+        )
+          .then((response2) => {
+            result = { success: true, response: response2 };
+          })
+          .catch((error) => {
+            result = { success: false, response: error };
+          });
+      } else {
+        result = { success: true, response: response };
+      }
+    })
+    .catch((error) => {
+      result = { success: false, response: error };
+    });
+  return result;
 }
 
 async function firebaseClearChats({ dispatch }, otherUserId) {

@@ -16,8 +16,13 @@ import {
 } from "firebase/firestore";
 import { collections } from "../firebase_config";
 
-function registerUser({}, payload) {
-  createUserWithEmailAndPassword(firebaseAuth, payload.email, payload.password)
+async function registerUser({}, payload) {
+  let result = {};
+  await createUserWithEmailAndPassword(
+    firebaseAuth,
+    payload.email,
+    payload.password
+  )
     .then((response) => {
       let userId = firebaseAuth.currentUser.uid;
       setDoc(doc(firebaseDb, collections.users, userId), {
@@ -27,25 +32,40 @@ function registerUser({}, payload) {
         invisible: false,
         invitation_code: payload.invite,
       });
-      return { success: true, response: response };
+      result = { success: true, response: response };
     })
     .catch((error) => {
-      return { success: false, response: error };
+      result = { success: false, response: error };
     });
+  return result;
 }
 
-function loginUser({}, payload) {
-  signInWithEmailAndPassword(firebaseAuth, payload.email, payload.password)
+async function loginUser({}, payload) {
+  let result = {};
+  await signInWithEmailAndPassword(
+    firebaseAuth,
+    payload.email,
+    payload.password
+  )
     .then((response) => {
-      return { success: true, response: response };
+      result = { success: true, response: response };
     })
     .catch((error) => {
-      return { success: false, response: error };
+      result = { success: false, response: error };
     });
+  return result;
 }
 
-function logoutUser() {
-  signOut(firebaseAuth);
+async function logoutUser() {
+  let result = {};
+  await signOut(firebaseAuth)
+    .then((response) => {
+      result = { success: true, response: response };
+    })
+    .catch((error) => {
+      result = { success: false, response: error };
+    });
+  return result;
 }
 
 function handleAuthStateChanged({ commit, dispatch, state }) {
@@ -69,7 +89,8 @@ function handleAuthStateChanged({ commit, dispatch, state }) {
       dispatch("firebase_budget/firebaseGetAllTransactions", null, {
         root: true,
       });
-      this.$router.push("/budget");
+      if (this.$router.currentRoute.value.fullPath == "/")
+        this.$router.push("/budget");
     } else {
       dispatch("firebaseUpdateUser", {
         userId: state.userDetails.userId,
@@ -102,16 +123,26 @@ function firebaseGetUsers({ commit }) {
   });
 }
 
-function firebaseUpdateUser({ commit }, payload) {
+async function firebaseUpdateUser({ commit }, payload) {
+  let result = {};
   if (payload.userId) {
-    updateDoc(
+    await updateDoc(
       doc(firebaseDb, collections.users, payload.userId),
       payload.updates
-    );
-    if (payload.updateCurrentUser) {
-      commit("updateCurrentUser", payload.updates);
-    }
+    )
+      .then((response) => {
+        if (payload.updateCurrentUser) {
+          commit("updateCurrentUser", payload.updates);
+        }
+        result = { success: true, response: response };
+      })
+      .catch((error) => {
+        result = { success: false, response: error };
+      });
+  } else {
+    result = { success: false, response: undefined };
   }
+  return result;
 }
 
 export {

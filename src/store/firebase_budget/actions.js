@@ -16,7 +16,12 @@ let transactionsRef;
 function firebaseGetAllTransactions({ commit }) {
   const userId = this.state.firebase_auth.userDetails.userId;
   const q = query(
-    collection(firebaseDb, collections.budget, userId, "transactions"),
+    collection(
+      firebaseDb,
+      collections.budget,
+      userId,
+      collections.budget_transactions
+    ),
     orderBy("timestamp")
   );
   transactionsRef = onSnapshot(q, (snapshot) => {
@@ -52,48 +57,84 @@ function firebaseStopGettingTransactions({ commit }) {
   }
 }
 
-function firebaseAddTransaction({}, payload) {
+async function firebaseAddTransaction({}, payload) {
+  let result = {};
   const userId = this.state.firebase_auth.userDetails.userId;
-  const myDoc = addDoc(
-    collection(firebaseDb, collections.budget, userId, "transactions"),
+  await addDoc(
+    collection(
+      firebaseDb,
+      collections.budget,
+      userId,
+      collections.budget_transactions
+    ),
     payload,
     { merge: true }
   )
-    .then((result) => {
-      return true;
+    .then((response) => {
+      result = { success: true, response: response };
     })
     .catch((error) => {
-      return false;
+      result = { success: false, response: error };
     });
+  return result;
 }
 
-function firebaseUpdateTransaction({}, payload) {
+async function firebaseUpdateTransaction({}, payload) {
+  let result = {};
   if (payload.id) {
     const userId = this.state.firebase_auth.userDetails.userId;
-    updateDoc(
-      doc(firebaseDb, collections.budget, userId, "transactions", payload.id),
+    await updateDoc(
+      doc(
+        firebaseDb,
+        collections.budget,
+        userId,
+        collections.budget_transactions,
+        payload.id
+      ),
       payload.updates
-    );
+    )
+      .then((response) => {
+        result = { success: true, response: response };
+      })
+      .catch((error) => {
+        result = { success: false, response: error };
+      });
+  } else {
+    result = { success: false, response: undefined };
   }
+  return result;
 }
 
-function firebaseDeleteTransaction({}, payload) {
+async function firebaseDeleteTransaction({}, payload) {
+  let result = {};
   const userId = this.state.firebase_auth.userDetails.userId;
-  deleteDoc(
-    doc(firebaseDb, collections.budget, userId, "transactions", payload.id)
+  await deleteDoc(
+    doc(
+      firebaseDb,
+      collections.budget,
+      userId,
+      collections.budget_transactions,
+      payload.id
+    )
   )
-    .then((result) => {
-      return true;
+    .then((response) => {
+      result = { success: true, response: response };
     })
     .catch((error) => {
-      return false;
+      result = { success: false, response: error };
     });
+  return result;
 }
 
 async function firebaseClearTransactions({ dispatch }) {
   const userId = this.state.firebase_auth.userDetails.userId;
   const q = query(
-    collection(firebaseDb, collections.budget, userId, "transactions"),
+    collection(
+      firebaseDb,
+      collections.budget,
+      userId,
+      collections.budget_transactions
+    ),
     orderBy("timestamp")
   );
   const querySnapshot = await getDocs(q);

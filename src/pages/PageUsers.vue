@@ -53,13 +53,18 @@
 
 <script>
 import { defineComponent } from "vue";
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters, mapActions, mapState } from "vuex";
 
 export default defineComponent({
   name: "Users Page",
 
+  created() {
+    if (!Object.keys(this.userDetails).length) this.$router.push("/");
+  },
+
   computed: {
     ...mapGetters("firebase_auth", ["users"]),
+    ...mapState("firebase_auth", ["userDetails"]),
   },
 
   methods: {

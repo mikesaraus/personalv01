@@ -125,6 +125,7 @@ export default defineComponent({
   },
 
   created() {
+    if (!Object.keys(this.userDetails).length) this.$router.push("/");
     this.firebaseGetMessages({
       otherUserId: this.$route.params.otherUserId,
       audioSrc: this.newMsg_NotifAudio,
