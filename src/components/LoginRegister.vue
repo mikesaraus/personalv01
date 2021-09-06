@@ -26,6 +26,7 @@
       v-model="formData.email"
       class="q-mb-md"
       outlined
+      autocomplete
       type="email"
       label="Email"
       tabindex="2"
@@ -48,6 +49,7 @@
       v-model="formData.password"
       class="q-mb-md"
       outlined
+      autocomplete
       type="password"
       label="Password"
       tabindex="3"
