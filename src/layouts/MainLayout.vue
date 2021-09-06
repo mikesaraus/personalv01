@@ -97,6 +97,14 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <q-page-scroller
+      position="bottom-right"
+      :scroll-offset="150"
+      :offset="[15, 15]"
+    >
+      <q-btn fab icon="keyboard_arrow_up" size="xs" color="primary" />
+    </q-page-scroller>
   </q-layout>
 </template>
 
@@ -141,7 +149,11 @@ export default defineComponent({
   },
 
   methods: {
-    ...mapActions("firebase_auth", ["logoutUser", "firebaseUpdateUser", "firebaseStopGettingUsers"]),
+    ...mapActions("firebase_auth", [
+      "logoutUser",
+      "firebaseUpdateUser",
+      "firebaseStopGettingUsers",
+    ]),
     ...mapActions("firebase_budget", ["firebaseStopGettingTransactions"]),
 
     updateInvisibility() {
@@ -153,7 +165,7 @@ export default defineComponent({
     },
     logout() {
       this.firebaseStopGettingTransactions();
-      this.firebaseStopGettingUsers()
+      this.firebaseStopGettingUsers();
       this.logoutUser();
     },
   },
