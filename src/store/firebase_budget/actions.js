@@ -13,7 +13,7 @@ import {
 import { collections } from "../firebase_config";
 let transactionsRef;
 
-function firebaseGetAllTransactions({ commit }) {
+function firebaseGetAllTransactions({ state, commit }) {
   const userId = this.state.firebase_auth.userDetails.userId;
   const q = query(
     collection(
@@ -29,10 +29,13 @@ function firebaseGetAllTransactions({ commit }) {
       const transactionDetails = change.doc.data();
       const transactionId = change.doc.id;
       if (change.type === "added") {
-        commit("addUnshiftTransactions", {
-          id: transactionId,
-          ...transactionDetails,
-        });
+        let index = state.transactions.findIndex((t) => t.id == transactionId);
+        if (!index) {
+          commit("addUnshiftTransactions", {
+            id: transactionId,
+            ...transactionDetails,
+          });
+        }
       }
       if (change.type === "modified") {
         commit("updateTransaction", {

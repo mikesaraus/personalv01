@@ -14,7 +14,7 @@ import { collections } from "../firebase_config";
 import { date } from "quasar";
 let messagesRef;
 
-function firebaseGetMessages({ commit, dispatch }, payload) {
+function firebaseGetMessages({ state, commit, dispatch }, payload) {
   const userId = this.state.firebase_auth.userDetails.userId;
   const q = query(
     collection(firebaseDb, collections.chats, userId, payload.otherUserId),
@@ -35,11 +35,13 @@ function firebaseGetMessages({ commit, dispatch }, payload) {
         messageDetails.from !== "me" &&
         snapshot._cachedChanges.length === 1;
       if (change.type === "added") {
-        commit("addMessage", { messageId, messageDetails });
-        if (sendNotif)
-          dispatch("messageNotification", {
-            audioSrc: payload.audioSrc,
-          });
+        if (!state.messages[messageId]) {
+          commit("addMessage", { messageId, messageDetails });
+          if (sendNotif)
+            dispatch("messageNotification", {
+              audioSrc: payload.audioSrc,
+            });
+        }
       }
       if (change.type === "modified") {
         commit("updateMessage", { messageId, messageDetails });
