@@ -30,7 +30,7 @@ function firebaseGetAllTransactions({ state, commit }) {
       const transactionId = change.doc.id;
       if (change.type === "added") {
         let index = state.transactions.findIndex((t) => t.id == transactionId);
-        if (!index) {
+        if (index < 0) {
           commit("addUnshiftTransactions", {
             id: transactionId,
             ...transactionDetails,
