@@ -36,33 +36,29 @@
         >
           <q-menu>
             <div
-              class="row no-wrap q-pa-md justify-arround"
+              class="row no-wrap q-px-md q-pb-xs q-pt-md justify-arround"
               style="min-width: 325px; max-width: 450px"
             >
               <div class="column col">
                 <div class="text-h6">Settings</div>
-                <q-toggle
-                  v-model="invisible"
+                <q-btn
+                  color="grey-9"
+                  :icon="
+                    userDetails.invisible ? 'visibility_off' : 'visibility'
+                  "
                   @click="updateInvisibility"
-                  label="Invisible"
+                  label="Visible"
+                  flat
+                  rounded
                 />
                 <q-btn
-                  v-if="$route.fullPath.includes('/chat')"
-                  outline
+                  color="grey-9"
+                  icon="logout"
+                  @click="logout"
+                  label="Logout"
+                  flat
                   rounded
-                  to="/budget"
-                  color="primary"
-                  label="Budget"
-                  icon="analytics"
-                />
-                <q-btn
-                  v-else
-                  outline
-                  rounded
-                  to="/chat"
-                  color="primary"
-                  label="Chat"
-                  icon="message"
+                  v-close-popup
                 />
               </div>
 
@@ -72,22 +68,43 @@
                 <q-avatar color="primary" text-color="white" size="72px">
                   {{ userDetails.name.charAt(0) }}
                 </q-avatar>
-                <div class="text-body2 q-mt-md q-mb-xs text-center">
+                <div class="text-body2 q-mt-md text-center">
                   {{ userDetails.name }}
                 </div>
-                <q-menu>
-                  <q-btn
-                    color="text-grey"
-                    icon="logout"
-                    @click="logout"
-                    label="Logout"
-                    ripple
-                    flat
-                    size="sm"
-                    v-close-popup
-                  />
-                </q-menu>
               </div>
+            </div>
+            <q-separator inset class="q-my-sm" />
+            <div class="q-px-md q-pt-xs q-pb-md">
+              <q-btn
+                class="q-ma-xs q-px-sm"
+                outline
+                round
+                title="Budget"
+                to="/budget"
+                color="primary"
+                icon="analytics"
+                stack
+              />
+              <q-btn
+                class="q-ma-xs q-px-sm"
+                outline
+                round
+                title="Chats"
+                to="/chat"
+                color="primary"
+                icon="message"
+                stack
+              />
+              <q-btn
+                class="q-ma-xs q-px-sm"
+                outline
+                round
+                title="Diary"
+                to="/diary"
+                color="primary"
+                icon="bookmark"
+                stack
+              />
             </div>
           </q-menu>
         </q-btn>
@@ -103,7 +120,13 @@
       :scroll-offset="150"
       :offset="[15, 15]"
     >
-      <q-btn fab icon="keyboard_arrow_up" size="xs" color="primary" />
+      <q-btn
+        fab
+        icon="keyboard_arrow_up"
+        size="xs"
+        color="primary"
+        style="opacity: 0.75"
+      />
     </q-page-scroller>
   </q-layout>
 </template>
@@ -118,12 +141,6 @@ export default defineComponent({
 
   mixins: [mixinOtherUserDetails],
 
-  data() {
-    return {
-      invisible: false,
-    };
-  },
-
   computed: {
     ...mapState("firebase_auth", ["userDetails"]),
 
@@ -133,18 +150,8 @@ export default defineComponent({
       else if (currentPath == "/chat") return "My Chats";
       else if (currentPath.includes("/chat/"))
         return this.otherUserDetails.name;
+      else if (currentPath == "/diary") return "My Diary";
       else if (currentPath == "/") return "Welcome, You!";
-    },
-  },
-
-  watch: {
-    userDetails: {
-      handler(val) {
-        if (Object.keys(val).length) {
-          this.invisible = this.userDetails.invisible;
-        }
-      },
-      deep: true,
     },
   },
 
@@ -159,8 +166,7 @@ export default defineComponent({
     updateInvisibility() {
       this.firebaseUpdateUser({
         userId: this.userDetails.userId,
-        updateCurrentUser: true,
-        updates: { invisible: this.invisible },
+        updates: { invisible: !this.userDetails.invisible },
       });
     },
     logout() {

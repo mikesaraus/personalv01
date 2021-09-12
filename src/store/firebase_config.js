@@ -1,7 +1,10 @@
 const collections = {
   users: "users",
   chats: "chats",
-  budget: "budget",
-  budget_transactions: "transactions",
+  personal: "personal",
+  personals: {
+    budget: "transactions",
+    diary: "diary",
+  },
 };
 export { collections };

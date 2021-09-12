@@ -10,6 +10,7 @@ const routes = [
         component: () => import("pages/PageChat.vue"),
       },
       { path: "/budget", component: () => import("pages/PageBudget.vue") },
+      { path: "/diary", component: () => import("pages/PageDiary.vue") },
     ],
   },
   // Always leave this as last one,

@@ -30,14 +30,14 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 
 export default defineComponent({
   name: "PageAuth",
 
   data() {
     return {
-      tab: "login",
+      tab: ref("login"),
     };
   },
 

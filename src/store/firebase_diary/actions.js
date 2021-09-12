@@ -11,56 +11,56 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { collections } from "../firebase_config";
-let transactionsRef;
+let diaryRef;
 
-function firebaseGetAllTransactions({ state, commit }) {
+function firebaseGetAllDiary({ state, commit }) {
   const userId = this.state.firebase_auth.userDetails.userId;
   const q = query(
     collection(
       firebaseDb,
       collections.personal,
       userId,
-      collections.personals.budget
+      collections.personals.diary
     ),
     orderBy("timestamp")
   );
-  transactionsRef = onSnapshot(q, (snapshot) => {
+  diaryRef = onSnapshot(q, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
-      const transactionDetails = change.doc.data();
-      const transactionId = change.doc.id;
+      const diaryDetails = change.doc.data();
+      const diaryId = change.doc.id;
       if (change.type === "added") {
-        let index = state.transactions.findIndex((t) => t.id == transactionId);
+        let index = state.diary.findIndex((t) => t.id == diaryId);
         if (index < 0) {
-          commit("addUnshiftTransactions", {
-            id: transactionId,
-            ...transactionDetails,
+          commit("addUnshiftDiary", {
+            id: diaryId,
+            ...diaryDetails,
           });
         }
       }
       if (change.type === "modified") {
-        commit("updateTransaction", {
-          id: transactionId,
-          ...transactionDetails,
+        commit("updateDiary", {
+          id: diaryId,
+          ...diaryDetails,
         });
       }
       if (change.type === "removed") {
-        commit("removeTransaction", {
-          id: transactionId,
-          ...transactionDetails,
+        commit("removeDiary", {
+          id: diaryId,
+          ...diaryDetails,
         });
       }
     });
   });
 }
 
-function firebaseStopGettingTransactions({ commit }) {
-  if (transactionsRef) {
-    transactionsRef();
-    commit("clearTransactions");
+function firebaseStopGettingDiary({ commit }) {
+  if (diaryRef) {
+    diaryRef();
+    commit("clearDiary");
   }
 }
 
-async function firebaseAddTransaction({}, payload) {
+async function firebaseAddDiary({}, payload) {
   let result = {};
   const userId = this.state.firebase_auth.userDetails.userId;
   await addDoc(
@@ -68,7 +68,7 @@ async function firebaseAddTransaction({}, payload) {
       firebaseDb,
       collections.personal,
       userId,
-      collections.personals.budget
+      collections.personals.diary
     ),
     payload,
     { merge: true }
@@ -82,7 +82,7 @@ async function firebaseAddTransaction({}, payload) {
   return result;
 }
 
-async function firebaseUpdateTransaction({}, payload) {
+async function firebaseUpdateDiary({}, payload) {
   let result = {};
   if (payload.id) {
     const userId = this.state.firebase_auth.userDetails.userId;
@@ -91,7 +91,7 @@ async function firebaseUpdateTransaction({}, payload) {
         firebaseDb,
         collections.personal,
         userId,
-        collections.personals.budget,
+        collections.personals.diary,
         payload.id
       ),
       payload.updates
@@ -108,7 +108,7 @@ async function firebaseUpdateTransaction({}, payload) {
   return result;
 }
 
-async function firebaseDeleteTransaction({}, payload) {
+async function firebaseDeleteDiary({}, payload) {
   let result = {};
   const userId = this.state.firebase_auth.userDetails.userId;
   await deleteDoc(
@@ -116,7 +116,7 @@ async function firebaseDeleteTransaction({}, payload) {
       firebaseDb,
       collections.personal,
       userId,
-      collections.personals.budget,
+      collections.personals.diary,
       payload.id
     )
   )
@@ -129,30 +129,30 @@ async function firebaseDeleteTransaction({}, payload) {
   return result;
 }
 
-async function firebaseClearTransactions({ dispatch }) {
+async function firebaseClearDiary({ dispatch }) {
   const userId = this.state.firebase_auth.userDetails.userId;
   const q = query(
     collection(
       firebaseDb,
       collections.personal,
       userId,
-      collections.personals.budget
+      collections.personals.diary
     ),
     orderBy("timestamp")
   );
   const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
-    dispatch("firebaseDeleteTransaction", {
+    dispatch("firebaseDeleteDiary", {
       id: doc.id,
     });
   });
 }
 
 export {
-  firebaseGetAllTransactions,
-  firebaseStopGettingTransactions,
-  firebaseAddTransaction,
-  firebaseUpdateTransaction,
-  firebaseDeleteTransaction,
-  firebaseClearTransactions,
+  firebaseGetAllDiary,
+  firebaseStopGettingDiary,
+  firebaseAddDiary,
+  firebaseUpdateDiary,
+  firebaseDeleteDiary,
+  firebaseClearDiary,
 };

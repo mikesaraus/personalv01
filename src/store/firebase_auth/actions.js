@@ -15,6 +15,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { collections } from "../firebase_config";
+import state from "./state";
 let usersRef;
 
 async function registerUser({}, payload) {
@@ -87,6 +88,9 @@ function handleAuthStateChanged({ commit, dispatch, state }) {
         },
       });
       dispatch("firebaseGetUsers");
+      dispatch("firebase_diary/firebaseGetAllDiary", null, {
+        root: true,
+      });
       dispatch("firebase_budget/firebaseGetAllTransactions", null, {
         root: true,
       });
@@ -105,7 +109,7 @@ function handleAuthStateChanged({ commit, dispatch, state }) {
   });
 }
 
-function firebaseGetUsers({ commit }) {
+function firebaseGetUsers({ state, commit }) {
   const q = query(collection(firebaseDb, collections.users));
   usersRef = onSnapshot(q, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
@@ -116,6 +120,12 @@ function firebaseGetUsers({ commit }) {
       }
       if (change.type === "modified") {
         commit("updateUser", { userId, userDetails });
+        if (userId === state.userDetails.userId) {
+          commit("setUserDetails", {
+            ...userDetails,
+            userId: userId,
+          });
+        }
       }
       if (change.type === "removed") {
         commit("removeUser", { userId, userDetails });
@@ -131,7 +141,7 @@ function firebaseStopGettingUsers({ commit }) {
   }
 }
 
-async function firebaseUpdateUser({ commit }, payload) {
+async function firebaseUpdateUser({}, payload) {
   let result = {};
   if (payload.userId) {
     await updateDoc(
@@ -139,9 +149,6 @@ async function firebaseUpdateUser({ commit }, payload) {
       payload.updates
     )
       .then((response) => {
-        if (payload.updateCurrentUser) {
-          commit("updateCurrentUser", payload.updates);
-        }
         result = { success: true, response: response };
       })
       .catch((error) => {

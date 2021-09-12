@@ -4,6 +4,7 @@ import { createStore } from "vuex";
 import firebase_auth from "./firebase_auth";
 import firebase_chat from "./firebase_chat";
 import firebase_budget from "./firebase_budget";
+import firebase_diary from "./firebase_diary";
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;
@@ -19,6 +20,7 @@ export default store(function (/* { ssrContext } */) {
       firebase_auth,
       firebase_chat,
       firebase_budget,
+      firebase_diary,
     },
 
     // enable strict mode (adds overhead!)

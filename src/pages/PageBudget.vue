@@ -323,19 +323,17 @@
 
 <script>
 import { defineComponent, ref, reactive } from "vue";
-import mixinMethods from "src/mixins/mixin-methods";
+import { mixinMethods, mixinTimer } from "src/mixins";
 import { useQuasar, date } from "quasar";
 import { mapActions, mapState, mapGetters } from "vuex";
 
 export default defineComponent({
   name: "Budget App",
 
-  mixins: [mixinMethods],
+  mixins: [mixinMethods, mixinTimer],
 
   data() {
     return {
-      timer: ref(null),
-      minuteTimer: 0,
       $q: useQuasar(),
       transactionStatus: ref(null),
       dialogDetails: ref(false),
@@ -392,14 +390,10 @@ export default defineComponent({
 
   created() {
     if (!Object.keys(this.userDetails).length) this.$router.push("/");
-    this.timer = setInterval(() => {
-      this.minuteTimer += 1;
-    }, 200);
   },
 
   methods: {
     ...mapActions("firebase_budget", [
-      "firebaseGetAllTransactions",
       "firebaseAddTransaction",
       "firebaseUpdateTransaction",
       "firebaseDeleteTransaction",
@@ -448,7 +442,7 @@ export default defineComponent({
         timestamp: Date.now(),
       };
     },
-    addNewTransaction() {
+    async addNewTransaction() {
       this.customAlert("Adding new transaction...", "ongoing", 50);
       if (
         this.newTransaction.money &&
@@ -463,8 +457,8 @@ export default defineComponent({
           timestamp: Date.now(),
         };
         this.transactionStatus = true;
-        const status = this.firebaseAddTransaction(transaction);
-        if (status) {
+        const status = await this.firebaseAddTransaction(transaction);
+        if (status.success) {
           setTimeout(() => {
             this.customAlert("Transaction has been added.", "positive");
           }, 300);
@@ -614,19 +608,11 @@ export default defineComponent({
         }
       });
     },
-    cancelAutoUpdate() {
-      clearInterval(this.timer);
-    },
-  },
-
-  unmounted() {
-    this.cancelAutoUpdate();
   },
 });
 </script>
 
-<style lang="scss">
-.no-history {
-  opacity: 0.5;
-}
+<style lang="sass">
+.no-history
+  opacity: 0.5
 </style>
