@@ -50,6 +50,8 @@
                   label="Visible"
                   flat
                   rounded
+                  size="md"
+                  no-caps
                 />
                 <q-btn
                   color="grey-9"
@@ -58,6 +60,8 @@
                   label="Logout"
                   flat
                   rounded
+                  size="md"
+                  no-caps
                   v-close-popup
                 />
               </div>
