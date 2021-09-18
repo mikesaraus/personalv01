@@ -9,13 +9,13 @@ function addPushDiary(state, payload) {
 }
 
 function removeDiary(state, payload) {
-  let index = state.diary.findIndex((post) => post.id == payload.id);
-  state.diary.splice(index, 1);
+  const index = state.diary.findIndex((post) => post.id == payload.id);
+  if (index >= 0) state.diary.splice(index, 1);
 }
 
 function updateDiary(state, payload) {
-  let index = state.diary.findIndex((post) => post.id == payload.id);
-  Object.assign(state.diary[index], payload);
+  const index = state.diary.findIndex((post) => post.id == payload.id);
+  if (index >= 0) Object.assign(state.diary[index], payload);
 }
 
 function clearDiary(state) {

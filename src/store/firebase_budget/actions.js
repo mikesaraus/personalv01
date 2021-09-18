@@ -46,7 +46,6 @@ function firebaseGetAllTransactions({ state, commit }) {
       if (change.type === "removed") {
         commit("removeTransaction", {
           id: transactionId,
-          ...transactionDetails,
         });
       }
     });
@@ -73,8 +72,8 @@ async function firebaseAddTransaction({}, payload) {
     payload,
     { merge: true }
   )
-    .then((response) => {
-      result = { success: true, response: response };
+    .then(() => {
+      result = { success: true };
     })
     .catch((error) => {
       result = { success: false, response: error };
@@ -96,14 +95,14 @@ async function firebaseUpdateTransaction({}, payload) {
       ),
       payload.updates
     )
-      .then((response) => {
-        result = { success: true, response: response };
+      .then(() => {
+        result = { success: true };
       })
       .catch((error) => {
         result = { success: false, response: error };
       });
   } else {
-    result = { success: false, response: undefined };
+    result = { success: false };
   }
   return result;
 }
@@ -120,8 +119,8 @@ async function firebaseDeleteTransaction({}, payload) {
       payload.id
     )
   )
-    .then((response) => {
-      result = { success: true, response: response };
+    .then(() => {
+      result = { success: true };
     })
     .catch((error) => {
       result = { success: false, response: error };

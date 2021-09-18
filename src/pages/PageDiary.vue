@@ -1,101 +1,121 @@
 <template>
   <q-page class="relative-position">
-    <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
-      <div class="col">
-        <q-input
-          v-model="newPostContent"
-          class="new-post"
-          ref="newPostContent"
-          placeholder="What's happening?"
-          counter
-          autogrow
-        >
-          <template v-slot:before>
-            <q-avatar
-              color="primary"
-              text-color="white"
-              size="xl"
-              icon="timeline"
-            />
-          </template>
-        </q-input>
+    <transition
+      appear
+      enter-active-class="animated rubberBand slow"
+      leave-active-class="animated fadeOutUp slow"
+    >
+      <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
+        <div class="col">
+          <q-input
+            v-model="newPostContent"
+            class="new-post"
+            ref="newPostContent"
+            placeholder="What's happening?"
+            counter
+            autogrow
+          >
+            <template v-slot:before>
+              <q-avatar
+                color="primary"
+                text-color="white"
+                size="xl"
+                icon="timeline"
+              />
+            </template>
+          </q-input>
+        </div>
+        <div class="col col-shrink">
+          <q-btn
+            rounded
+            unelevated
+            label="post"
+            class="q-mb-lg"
+            color="primary"
+            :disable="!newPostContent"
+            @click="dialogTitle = true"
+          />
+        </div>
       </div>
-      <div class="col col-shrink">
-        <q-btn
-          @click="dialogTitle = true"
-          :disable="!newPostContent"
-          class="q-mb-lg"
-          color="primary"
-          label="post"
-          rounded
-          unelevated
-        />
-      </div>
-    </div>
+    </transition>
 
     <q-separator class="divider" color="grey-2" size="10px" />
 
     <q-pull-to-refresh @refresh="refresh">
-      <q-timeline
-        v-if="diary.length"
-        class="q-pa-lg"
-        color="secondary"
-        :layout="timelineLayout"
-      >
-        <transition-group
-          appear
-          enter-active-class="animated fadeIn slow"
-          leave-active-class="animated fadeOut slow"
+      <div v-if="diary.length">
+        <q-timeline
+          color="secondary"
+          class="paperbg q-pa-lg"
+          :layout="timelineLayout"
+          style="overflow-wrap: break-word"
         >
-          <q-timeline-entry
-            v-for="(post, i) in diary"
-            :key="post.id"
-            :side="i % 2 == 0 ? 'right' : 'left'"
-            :icon="post.liked ? 'fas fa-heart' : 'far fa-heart'"
-            :color="post.liked ? 'primary' : 'secondary'"
+          <transition-group
+            appear
+            enter-active-class="animated bounceInUp slow"
+            leave-active-class="animated fadeOutBottomRight slow"
           >
-            <template v-slot:title>
+            <q-timeline-entry
+              :ref="post.id"
+              :key="post.id"
+              style="cursor: pointer"
+              v-for="(post, i) in diary"
+              @dblclick="toogleLike(post)"
+              v-ripple.early="{ color: 'primary' }"
+              :side="i % 2 == 0 ? 'right' : 'left'"
+              :color="post.liked ? 'primary' : 'secondary'"
+              :icon="post.liked ? 'fas fa-heart' : 'far fa-heart'"
+            >
+              <template v-slot:title>
+                <div>
+                  {{ post.title }}
+                </div>
+              </template>
+              <template v-slot:subtitle>
+                <div :key="minuteTimer">
+                  {{ relativeDate(post.timestamp) }}
+                </div>
+              </template>
               <div>
-                {{ post.title }}
+                {{ post.content }}
               </div>
-            </template>
-            <template v-slot:subtitle>
-              <div :key="minuteTimer">
-                {{ relativeDate(post.timestamp) }}
-              </div>
-            </template>
-            <div>
-              {{ post.content }}
-            </div>
-            <q-menu context-menu>
-              <q-list dense style="min-width: 100px">
-                <q-item clickable v-close-popup @click="toogleLike(post)">
-                  <q-item-section avatar>
-                    <q-icon
-                      :name="post.liked ? 'fas fa-heart' : 'far fa-heart'"
-                    />
-                  </q-item-section>
-                  <q-item-section>{{
-                    post.liked ? "Liked" : "Like"
-                  }}</q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup @click="enableEdit(post)">
-                  <q-item-section avatar>
-                    <q-icon name="mode_edit_outline" />
-                  </q-item-section>
-                  <q-item-section>Edit</q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup @click="deletePost(post)">
-                  <q-item-section avatar>
-                    <q-icon name="delete_outline" />
-                  </q-item-section>
-                  <q-item-section>Delete</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-timeline-entry>
-        </transition-group>
-      </q-timeline>
+              <q-menu context-menu @show="$refs[post.id].$el.click()">
+                <q-list>
+                  <q-item clickable v-close-popup @click="toogleLike(post)">
+                    <q-item-section avatar style="min-width: 35px">
+                      <q-icon
+                        :name="post.liked ? 'fas fa-heart' : 'far fa-heart'"
+                      />
+                    </q-item-section>
+                    <q-item-section>
+                      {{ post.liked ? "Liked" : "Like" }}
+                    </q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="enableEdit(post)">
+                    <q-item-section avatar style="min-width: 35px">
+                      <q-icon name="mode_edit_outline" />
+                    </q-item-section>
+                    <q-item-section>Edit</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="deletePost(post)">
+                    <q-item-section avatar style="min-width: 35px">
+                      <q-icon name="delete_outline" />
+                    </q-item-section>
+                    <q-item-section>Delete</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-timeline-entry>
+          </transition-group>
+        </q-timeline>
+
+        <div class="text-center text-grey-6 text-weight-light q-pb-lg">
+          <q-icon name="horizontal_rule" />
+          End of History
+          <q-icon name="horizontal_rule" />
+        </div>
+      </div>
 
       <div v-else class="no-history text-center q-mt-xl">
         <q-icon name="timeline" size="100px" color="primary"></q-icon>
@@ -104,30 +124,31 @@
     </q-pull-to-refresh>
 
     <q-dialog v-model="dialogEdit">
-      <q-card style="width: 700px; max-width: 80vw">
+      <q-card style="width: 700px; max-width: 80vw" class="q-pa-sm">
         <q-card-section class="row items-center">
           <q-avatar icon="edit_note" color="primary" text-color="white" />
-          <span class="q-ml-sm text-subtitle1">Edit Story</span>
+          <span class="q-ml-sm text-subtitle1 text-weight-medium"
+            >Edit Story</span
+          >
         </q-card-section>
-
-        <div class="q-px-lg">
+        <q-card-section class="q-pt-none">
           <q-input
             autofocus
             lazy-rules
-            class="q-py-sm new-post"
-            placeholder="Add a Title"
+            tabindex="1"
+            class="new-post"
             ref="editPostTitle"
             v-model="editPostTitle"
-            tabindex="1"
+            placeholder="Add a Title"
           >
             <template v-slot:prepend>
-              <q-avatar text-color="primary" size="xl" icon="title" />
+              <q-avatar size="xl" icon="title" class="primary" />
             </template>
           </q-input>
           <q-input
             lazy-rules
             autogrow
-            class="q-py-sm new-post"
+            class="new-post"
             placeholder="What's happening?"
             ref="editPostContent"
             v-model="editPostContent"
@@ -137,49 +158,54 @@
               <q-avatar text-color="primary" size="xl" icon="text_fields" />
             </template>
           </q-input>
-        </div>
+        </q-card-section>
         <q-card-actions align="right">
           <q-btn
             flat
-            ref="formEditsReset"
-            label="Cancel"
             type="reset"
-            color="grey-6"
-            v-close-popup
             tabindex="4"
+            v-close-popup
+            label="Cancel"
+            color="grey-6"
+            ref="formEditsReset"
             @click="resetEditPost"
           />
           <q-btn
             flat
-            ref="formEditSubmit"
+            tabindex="3"
             label="Confirm"
             color="primary"
-            v-close-popup="editStatus.value"
-            tabindex="3"
             @click="editPost"
+            ref="formEditSubmit"
+            v-close-popup="editStatus.value"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
     <q-dialog v-model="dialogTitle">
-      <q-card style="width: 700px; max-width: 80vw">
+      <q-card style="width: 700px; max-width: 80vw" class="q-pa-sm">
         <q-card-section class="row items-center">
           <q-avatar icon="timeline" color="primary" text-color="white" />
-          <span class="q-ml-sm text-subtitle1">Story Title</span>
+          <span class="q-ml-sm text-subtitle1 text-weight-medium"
+            >Story Title</span
+          >
         </q-card-section>
-
-        <div class="q-px-lg">
+        <q-card-section class="q-pt-none">
           <q-input
             autofocus
             lazy-rules
-            class="q-py-sm new-post"
-            placeholder="Add a Title"
+            tabindex="1"
             ref="newPostTitle"
             v-model="newPostTitle"
-            tabindex="1"
-          />
-        </div>
+            class="q-py-sm new-post"
+            placeholder="Add a Title"
+          >
+            <template v-slot:prepend>
+              <q-avatar size="xl" icon="title" class="primary" />
+            </template>
+          </q-input>
+        </q-card-section>
         <q-card-actions align="right">
           <q-btn
             flat
@@ -193,12 +219,12 @@
           />
           <q-btn
             flat
-            ref="formDetailsSubmit"
-            label="Confirm"
-            color="primary"
-            v-close-popup="postStatus.value"
             tabindex="2"
+            color="primary"
+            label="Confirm"
             @click="addNewPost"
+            ref="formDetailsSubmit"
+            v-close-popup="postStatus.value"
           />
         </q-card-actions>
       </q-card>
@@ -211,6 +237,7 @@ import { defineComponent, ref } from "vue";
 import { mapState, mapActions } from "vuex";
 import { mixinMethods, mixinTimer } from "src/mixins";
 import { useQuasar } from "quasar";
+import { customAlert } from "src/assets/scripts/functions";
 
 export default defineComponent({
   name: "Diary",
@@ -232,8 +259,13 @@ export default defineComponent({
     };
   },
 
-  created() {
-    if (!Object.keys(this.userDetails).length) this.$router.push("/");
+  beforeMount() {
+    if (this.userDetails.passphrase) this.firebaseGetAllDiary();
+  },
+
+  mounted() {
+    if (this.userDetails.passphrase && !this.diary.length)
+      this.firebaseGetAllDiary();
   },
 
   computed: {
@@ -251,6 +283,7 @@ export default defineComponent({
 
   methods: {
     ...mapActions("firebase_diary", [
+      "firebaseGetAllDiary",
       "firebaseAddDiary",
       "firebaseUpdateDiary",
       "firebaseClearDiary",
@@ -275,17 +308,17 @@ export default defineComponent({
         if (status.success) {
           this.postStatus = ref(true);
           setTimeout(() => {
-            this.customAlert("Story has been added.", "positive");
+            customAlert("Story has been added.", "positive");
           }, 300);
           this.resetNewPost();
         } else {
           setTimeout(() => {
-            this.customAlert("Failed to add story.", "negative");
+            customAlert("Failed to add story.", "negative");
           }, 300);
         }
       } else {
         setTimeout(() => {
-          this.customAlert("Please add some story.", "warning");
+          customAlert("Please add some story.", "warning");
         }, 300);
       }
     },
@@ -299,16 +332,6 @@ export default defineComponent({
       this.editPostContent = ref("");
       this.editPostId = ref("");
       this.editStatus = ref(false);
-    },
-    customAlert(message, type, timeout = 1000, position = null) {
-      if (!type || !message) return;
-      let config = {
-        type: type,
-        message: message,
-        timeout: timeout,
-      };
-      if (position) config.position = position;
-      this.$q.notify(config);
     },
     toogleLike(post) {
       this.firebaseUpdateDiary({
@@ -336,28 +359,49 @@ export default defineComponent({
         if (status.success) {
           this.editStatus = ref(true);
           setTimeout(() => {
-            this.customAlert("Story has been modified.", "positive");
+            customAlert("Story has been modified.", "positive");
           }, 300);
           this.resetEditPost();
         } else {
           setTimeout(() => {
-            this.customAlert("Failed to edit story.", "negative");
+            customAlert("Failed to edit story.", "negative");
           }, 300);
         }
       } else {
         setTimeout(() => {
-          this.customAlert("Please add some story.", "warning");
+          customAlert("Please add some story.", "warning");
         }, 300);
       }
     },
     deletePost(post) {
-      this.firebaseDeleteDiary(post);
+      this.firebaseDeleteDiary({ id: post.id });
     },
+  },
+
+  beforeUnmount() {
+    this.firebaseStopGettingDiary();
   },
 });
 </script>
 
 <style lang="sass">
+
+.paperbg::after
+  content: ""
+  display: block
+  position: absolute
+  left: 0
+  right: 0
+  top: 0
+  bottom: 0
+  z-index: 0
+  opacity: 0.1
+  background-size: 25px 25px
+  background-image:  repeating-linear-gradient(0deg, #444cf7, #444cf7 1px, #e5e5f7 1px, #e5e5f7)
+
+.paperbg *
+  z-index: 1
+
 .new-post, .new-post
     font-size: 19px
     line-height: 1.4 !important
@@ -372,4 +416,7 @@ export default defineComponent({
 
 .no-history
   opacity: 0.5
+
+.q-textarea .q-field__native, .q-textarea .q-field__prefix, .q-textarea .q-field__suffix
+    line-height: 25px
 </style>

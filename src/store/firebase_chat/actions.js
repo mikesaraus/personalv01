@@ -58,40 +58,54 @@ function firebaseGetMessages({ state, commit, dispatch }, payload) {
 }
 
 function messageNotification({}, payload) {
-  var audio = new Audio(payload.audioSrc);
-  audio.play();
+  let result = {};
+  try {
+    var audio = new Audio(payload.audioSrc);
+    audio.play();
+    result = { success: true };
+  } catch (error) {
+    result = { success: false, response: error };
+  }
+  return result;
 }
 
-function firebaseStopGettingMessages({ commit }) {
-  if (messagesRef) {
-    messagesRef();
-    commit("clearMessages");
+async function firebaseStopGettingMessages({ commit }) {
+  let result = {};
+  try {
+    if (messagesRef) {
+      await messagesRef();
+      await commit("clearMessages");
+    }
+    result = { success: true };
+  } catch (error) {
+    result = { success: false, response: error };
   }
+  return result;
 }
 
 async function firebaseSendMessage({}, payload) {
   let result = {};
   const userId = this.state.firebase_auth.userDetails.userId;
-  const myDoc = await addDoc(
+  await addDoc(
     collection(firebaseDb, collections.chats, userId, payload.otherUserId),
     payload.message,
     { merge: true }
   )
-    .then((response) => {
+    .then(async (response) => {
       payload.message.from = "them";
-      setDoc(
+      await setDoc(
         doc(
           firebaseDb,
           collections.chats,
           payload.otherUserId,
           userId,
-          myDoc.id
+          response.id
         ),
         payload.message,
         { merge: true }
       )
-        .then((response2) => {
-          result = { success: true, response: response2 };
+        .then(() => {
+          result = { success: true };
         })
         .catch((error) => {
           result = { success: false, response: error };
@@ -100,6 +114,7 @@ async function firebaseSendMessage({}, payload) {
     .catch((error) => {
       result = { success: false, response: error };
     });
+  return result;
 }
 
 async function firebaseDeleteMessage({}, payload) {
@@ -114,7 +129,7 @@ async function firebaseDeleteMessage({}, payload) {
       payload.messageId
     )
   )
-    .then(async (response) => {
+    .then(async () => {
       if (payload.deleteForEveryone) {
         await deleteDoc(
           doc(
@@ -125,14 +140,14 @@ async function firebaseDeleteMessage({}, payload) {
             payload.messageId
           )
         )
-          .then((response2) => {
-            result = { success: true, response: response2 };
+          .then(() => {
+            result = { success: true };
           })
           .catch((error) => {
             result = { success: false, response: error };
           });
       } else {
-        result = { success: true, response: response };
+        result = { success: true };
       }
     })
     .catch((error) => {
@@ -142,18 +157,43 @@ async function firebaseDeleteMessage({}, payload) {
 }
 
 async function firebaseClearChats({ dispatch }, otherUserId) {
-  const userId = this.state.firebase_auth.userDetails.userId;
-  const q = query(
-    collection(firebaseDb, collections.chats, userId, otherUserId),
-    orderBy("timestamp")
-  );
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    dispatch("firebaseDeleteMessage", {
-      otherUserId: otherUserId,
-      messageId: doc.id,
-    });
-  });
+  let result = {};
+  try {
+    const userId = this.state.firebase_auth.userDetails.userId;
+    const q = query(
+      collection(firebaseDb, collections.chats, userId, otherUserId),
+      orderBy("timestamp")
+    );
+    await getDocs(q)
+      .then((querySnapshot) => {
+        let errorCount = 0;
+        querySnapshot.forEach(async (doc) => {
+          await dispatch("firebaseDeleteMessage", {
+            otherUserId: otherUserId,
+            messageId: doc.id,
+          })
+            .then((res) => {
+              if (!res.success) {
+                errorCount++;
+              }
+            })
+            .catch(() => {
+              errorCount++;
+            });
+        });
+        if (errorCount === 0) {
+          result = { success: true, response: querySnapshot };
+        } else {
+          result = { success: false, response: { errorCount, querySnapshot } };
+        }
+      })
+      .catch((error) => {
+        result = { success: false, response: error };
+      });
+  } catch (error) {
+    result = { success: false, response: error };
+  }
+  return result;
 }
 
 export {

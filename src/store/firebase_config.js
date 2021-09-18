@@ -5,6 +5,7 @@ const collections = {
   personals: {
     budget: "transactions",
     diary: "diary",
+    pgpkeys: "pgpkeys",
   },
 };
 export { collections };

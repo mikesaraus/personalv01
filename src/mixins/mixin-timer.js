@@ -11,7 +11,7 @@ export default {
   created() {
     this.timer = setInterval(() => {
       this.minuteTimer += 1;
-    }, 200);
+    }, 1000);
   },
 
   methods: {
@@ -20,7 +20,7 @@ export default {
     },
   },
 
-  unmounted() {
+  beforeUnmount() {
     this.cancelAutoUpdate();
   },
 };

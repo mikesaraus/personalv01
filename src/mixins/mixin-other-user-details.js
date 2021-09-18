@@ -1,12 +1,12 @@
+import { mapGetters } from "vuex";
+
 export default {
   computed: {
+    ...mapGetters("firebase_auth", ["users"]),
+
     otherUserDetails() {
-      if (
-        this.$store.state.firebase_auth.users[this.$route.params.otherUserId]
-      ) {
-        return this.$store.state.firebase_auth.users[
-          this.$route.params.otherUserId
-        ];
+      if (this.users[this.$route.params.otherUserId]) {
+        return this.users[this.$route.params.otherUserId];
       }
       return {};
     },

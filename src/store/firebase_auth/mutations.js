@@ -16,7 +16,7 @@ function removeUser(state, payload) {
   delete state.users[payload.userId];
 }
 
-function clearUser(state, payload) {
+function clearUser(state) {
   state.users = reactive({});
 }
 

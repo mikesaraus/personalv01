@@ -9,17 +9,17 @@ function addPushTransactions(state, payload) {
 }
 
 function removeTransaction(state, payload) {
-  let index = state.transactions.findIndex(
+  const index = state.transactions.findIndex(
     (transaction) => transaction.id == payload.id
   );
-  state.transactions.splice(index, 1);
+  if (index >= 0) state.transactions.splice(index, 1);
 }
 
 function updateTransaction(state, payload) {
-  let index = state.transactions.findIndex(
+  const index = state.transactions.findIndex(
     (transaction) => transaction.id == payload.id
   );
-  Object.assign(state.transactions[index], payload);
+  if (index >= 0) Object.assign(state.transactions[index], payload);
 }
 
 function clearTransactions(state) {

@@ -1,21 +1,23 @@
 <template>
   <q-form @submit="submitForm">
     <q-input
-      v-if="tab == 'register'"
-      v-model="formData.name"
-      class="q-mb-md"
       outlined
       label="Name"
       tabindex="1"
+      ref="fieldName"
+      class="q-mb-md"
+      v-model="formData.name"
+      v-if="tab == 'register'"
     >
       <template v-slot:prepend>
         <q-icon round dense flat size="xs" name="person" />
       </template>
       <template v-slot:append>
         <q-btn
+          flat
           round
           dense
-          flat
+          ripple
           icon="clear"
           v-if="formData.name"
           @click="formData.name = ''"
@@ -23,22 +25,24 @@
       </template>
     </q-input>
     <q-input
-      v-model="formData.email"
-      class="q-mb-md"
       outlined
       autocomplete
       type="email"
       label="Email"
       tabindex="2"
+      class="q-mb-md"
+      ref="fieldEmail"
+      v-model="formData.email"
     >
       <template v-slot:prepend>
         <q-icon round dense flat size="xs" name="email" />
       </template>
       <template v-slot:append>
         <q-btn
+          flat
           round
           dense
-          flat
+          ripple
           icon="clear"
           v-if="formData.email"
           @click="formData.email = ''"
@@ -46,22 +50,39 @@
       </template>
     </q-input>
     <q-input
-      v-model="formData.password"
-      class="q-mb-md"
       outlined
       autocomplete
-      type="password"
-      label="Password"
       tabindex="3"
+      class="q-mb-md"
+      label="Password"
+      ref="fieldPassword"
+      :type="passfieldType"
+      @focus="passEye = true"
+      @blur="passEye = false"
+      v-model="formData.password"
     >
       <template v-slot:prepend>
         <q-icon round dense flat size="xs" name="lock" />
       </template>
       <template v-slot:append>
         <q-btn
+          flat
           round
           dense
+          ripple
+          :icon="
+            passfieldType.toLowerCase() == 'text'
+              ? 'visibility_off'
+              : 'visibility'
+          "
+          v-if="formData.password && passEye"
+          @click="togglePassview"
+        />
+        <q-btn
           flat
+          round
+          dense
+          ripple
           icon="clear"
           v-if="formData.password"
           @click="formData.password = ''"
@@ -69,21 +90,23 @@
       </template>
     </q-input>
     <q-input
+      outlined
+      tabindex="4"
+      class="q-mb-md"
+      ref="fieldInviteCode"
+      label="Invitation Code"
       v-if="tab == 'register'"
       v-model="formData.invite"
-      class="q-mb-md"
-      outlined
-      label="Invitation Code"
-      tabindex="4"
     >
       <template v-slot:prepend>
         <q-icon round dense flat size="xs" name="vpn_key" />
       </template>
       <template v-slot:append>
         <q-btn
+          flat
           round
           dense
-          flat
+          ripple
           icon="clear"
           v-if="formData.invite"
           @click="formData.invite = ''"
@@ -93,21 +116,30 @@
     <div class="row">
       <q-space />
       <q-btn
-        color="primary"
-        :disable="tab == 'register' ? registerReady : loginReady"
-        type="submit"
-        :label="tab"
+        ripple
         tabindex="5"
-      />
+        label="Submit"
+        type="submit"
+        color="primary"
+        ref="btnSubmit"
+        :loading="decrypting.status"
+        :percentage="decrypting.percentage"
+        :disable="tab == 'register' ? registerReady : loginReady"
+      >
+        <template v-slot:loading>
+          <q-spinner-facebook size="xs" class="on-left" />
+        </template>
+      </q-btn>
     </div>
   </q-form>
 </template>
 
 <script>
-import { defineComponent } from "vue";
 import { useQuasar } from "quasar";
+import { defineComponent, ref } from "vue";
 import { mapActions, mapState } from "vuex";
 import { random_word } from "src/boot/axios";
+import { customAlert } from "src/assets/scripts/functions";
 
 export default defineComponent({
   name: "login-register",
@@ -118,12 +150,16 @@ export default defineComponent({
     return {
       $q: useQuasar(),
       formData: {
-        name: "",
-        email: "",
-        password: "",
-        invite: "",
+        name: ref(""),
+        email: ref(""),
+        password: ref(""),
+        invite: ref(""),
       },
-      inviteCode: "",
+      passEye: ref(false),
+      inviteCode: ref(""),
+      passfieldType: ref("password"),
+      decrypting: ref({ status: false, percentage: 0 }),
+      interval: ref(null),
     };
   },
 
@@ -156,27 +192,27 @@ export default defineComponent({
     ...mapActions("firebase_auth", ["registerUser", "loginUser"]),
 
     async submitForm() {
+      this.decrypting.status = true;
       if (this.tab == "login") {
-        this.customAlert("Logging in...", "ongoing", 50);
         const status = await this.loginUser(this.formData);
         if (!status.success) {
-          setTimeout(() => {
-            this.customAlert("Login failed. Try Again!", "negative");
-          }, 300);
+          this.$refs.fieldPassword.focus();
+          this.btnLoadingInterval("Login failed!", "negative");
+        } else {
+          this.btnLoadingInterval();
         }
       } else {
-        this.customAlert("Processing...", "ongoing", 50);
         if (this.inviteCode == this.formData.invite) {
           const status = await this.registerUser(this.formData);
           if (!status.success) {
-            setTimeout(() => {
-              this.customAlert("Registration failed!", "warning");
-            }, 300);
+            this.$refs.fieldInviteCode.focus();
+            this.btnLoadingInterval("Registration failed!", "warning");
+          } else {
+            this.btnLoadingInterval();
           }
         } else {
-          setTimeout(() => {
-            this.customAlert("You are not invited in here!", "warning");
-          }, 300);
+          this.$refs.fieldInviteCode.focus();
+          this.btnLoadingInterval("You are not invited!", "warning");
         }
       }
     },
@@ -185,23 +221,38 @@ export default defineComponent({
         .get("?number=1")
         .then((response) => {
           const c = response.data[0];
-          console.log(c);
+          console.log(
+            "%c" + c,
+            "color: grey; font-size: 1.3em; text-weight: bold;"
+          );
           this.inviteCode = c;
         })
         .catch(() => {
-          console.log("You are not allowed in here!");
+          console.log("No Invitation!");
         });
     },
-    customAlert(message, type, timeout = 1000, position = null) {
-      if (!type || !message) return;
-      let config = {
-        type: type,
-        message: message,
-        timeout: timeout,
-      };
-      if (position) config.position = position;
-      this.$q.notify(config);
+    btnLoadingInterval(msg, msgType) {
+      this.interval = setInterval(() => {
+        this.decrypting.percentage += Math.floor(Math.random() * 8 + 10);
+        if (this.decrypting.percentage >= 100) {
+          this.decrypting.status = false;
+          if (msg && msgType) customAlert(msg, msgType);
+          clearInterval(this.interval);
+        }
+      }, 100);
     },
+    togglePassview() {
+      this.passfieldType =
+        this.passfieldType.toLowerCase() == "text" ? "password" : "text";
+      setTimeout(() => {
+        if (this.passfieldType.toLowerCase() == "text")
+          this.passfieldType = "password";
+      }, 3000);
+    },
+  },
+
+  beforeUnmount() {
+    if (this.interval) clearInterval(this.interval);
   },
 });
 </script>

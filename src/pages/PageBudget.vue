@@ -19,200 +19,267 @@
           {{ moneyFormat(walletBalance) }}
         </span>
         <q-btn
+          flat
           round
           dense
-          flat
-          icon="add_circle_outline"
-          color="primary"
+          ripple
           size="md"
+          color="primary"
           @click="popupDetails"
+          icon="add_circle_outline"
         ></q-btn>
         <p class="text-caption">Available Balance</p>
       </div>
 
-      <div class="q-py-md" v-if="transactions.length">
-        <q-card class="bg-transparent no-shadow no-border">
-          <q-card-section
-            class="
-              fit
-              row
-              wrap
-              full-width
-              justify-evenly
-              items-center
-              content-center
-            "
-          >
-            <q-item
+      <div v-if="transactions.length">
+        <transition
+          appear
+          enter-active-class="animated bounce slow"
+          leave-active-class="animated fadeOutDown slow"
+        >
+          <q-card class="bg-transparent no-shadow no-border">
+            <q-card-section
               class="
-                col-xs-12 col-sm-4 col-md-2 col-lg-2
-                q-mx-sm q-mt-sm
-                bg-primary
+                fit
+                row
+                wrap
+                full-width
+                justify-evenly
+                items-center
+                content-center
               "
             >
-              <q-item-section side class="q-pa-md text-white bg-accent">
-                <q-icon name="analytics" color="white" size="md"></q-icon>
-              </q-item-section>
-              <q-item-section class="text-white q-pl-md">
-                <q-item-label class="text-h6 text-weight-bolder">
-                  {{
-                    moneyFormat(
-                      filteredTransactionThisDay
-                        ? filteredTransactionThisDay.money
-                        : 0
-                    )
-                  }}
-                </q-item-label>
-                <q-item-label>This Day</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item
-              style="background-color: #f37169"
-              class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
-            >
-              <q-item-section
-                side
-                style="background-color: #f34636"
-                class="q-pa-md text-white"
+              <q-item
+                class="
+                  col-xs-12 col-sm-4 col-md-2 col-lg-2
+                  q-mx-sm q-mt-sm
+                  bg-primary
+                "
               >
-                <q-icon name="date_range" size="md"></q-icon>
-              </q-item-section>
-              <q-item-section class="text-white q-pl-md">
-                <q-item-label class="text-h6 text-weight-bolder">
-                  {{
-                    moneyFormat(
-                      filteredTransactionThisWeek
-                        ? filteredTransactionThisWeek.money
-                        : 0
-                    )
-                  }}
-                </q-item-label>
-                <q-item-label>This Week</q-item-label>
-              </q-item-section>
-            </q-item>
+                <q-item-section side class="q-pa-md text-white bg-accent">
+                  <q-icon name="analytics" color="white" size="md"></q-icon>
+                </q-item-section>
+                <q-item-section class="text-white q-pl-md">
+                  <q-item-label class="text-h6 text-weight-bolder">
+                    {{
+                      moneyFormat(
+                        filteredTransactionThisDay
+                          ? filteredTransactionThisDay.money
+                          : 0
+                      )
+                    }}
+                  </q-item-label>
+                  <q-item-label>This Day</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item
-              style="background-color: #e4b021"
-              class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
-            >
-              <q-item-section
-                side
-                style="background-color: #d3a424"
-                class="q-pa-md text-white"
+              <q-item
+                style="background-color: #f37169"
+                class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
               >
-                <q-icon name="calendar_today" size="md"></q-icon>
-              </q-item-section>
-              <q-item-section class="text-white q-pl-md">
-                <q-item-label class="text-h6 text-weight-bolder">
-                  {{
-                    moneyFormat(
-                      filteredTransactionThisMonth
-                        ? filteredTransactionThisMonth.money
-                        : 0
-                    )
-                  }}
-                </q-item-label>
-                <q-item-label>This Month</q-item-label>
-              </q-item-section>
-            </q-item>
+                <q-item-section
+                  side
+                  style="background-color: #f34636"
+                  class="q-pa-md text-white"
+                >
+                  <q-icon name="date_range" size="md"></q-icon>
+                </q-item-section>
+                <q-item-section class="text-white q-pl-md">
+                  <q-item-label class="text-h6 text-weight-bolder">
+                    {{
+                      moneyFormat(
+                        filteredTransactionThisWeek
+                          ? filteredTransactionThisWeek.money
+                          : 0
+                      )
+                    }}
+                  </q-item-label>
+                  <q-item-label>This Week</q-item-label>
+                </q-item-section>
+              </q-item>
 
-            <q-item
-              style="background-color: #a270b1"
-              class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
-            >
-              <q-item-section
-                side
-                style="background-color: #9f52b1"
-                class="q-pa-md text-white"
+              <q-item
+                style="background-color: #e4b021"
+                class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
               >
-                <q-icon name="bar_chart" size="md"></q-icon>
-              </q-item-section>
-              <q-item-section class="text-white q-pl-md">
-                <q-item-label class="text-h6 text-weight-bolder">
-                  {{
-                    moneyFormat(
-                      filteredTransactionThisYear
-                        ? filteredTransactionThisYear.money
-                        : 0
-                    )
-                  }}
-                </q-item-label>
-                <q-item-label>This Year</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-card-section>
-        </q-card>
+                <q-item-section
+                  side
+                  style="background-color: #d3a424"
+                  class="q-pa-md text-white"
+                >
+                  <q-icon name="calendar_today" size="md"></q-icon>
+                </q-item-section>
+                <q-item-section class="text-white q-pl-md">
+                  <q-item-label class="text-h6 text-weight-bolder">
+                    {{
+                      moneyFormat(
+                        filteredTransactionThisMonth
+                          ? filteredTransactionThisMonth.money
+                          : 0
+                      )
+                    }}
+                  </q-item-label>
+                  <q-item-label>This Month</q-item-label>
+                </q-item-section>
+              </q-item>
 
-        <q-list separator class="q-py-md">
-          <q-item-label header>Transaction History</q-item-label>
-          <transition-group
-            appear
-            enter-active-class="animated fadeIn"
-            leave-active-class="animated fadeOut"
-          >
-            <q-item v-for="(trans, key) in transactions" :key="key">
-              <q-item-section top avatar>
-                <q-avatar
-                  :color="trans.type == 'debit' ? 'positive' : 'negative'"
-                  text-color="white"
-                  :icon="
-                    trans.type == 'debit'
-                      ? 'fas fa-angle-double-up'
-                      : 'fas fa-angle-double-down'
-                  "
-                />
-              </q-item-section>
+              <q-item
+                style="background-color: #a270b1"
+                class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
+              >
+                <q-item-section
+                  side
+                  style="background-color: #9f52b1"
+                  class="q-pa-md text-white"
+                >
+                  <q-icon name="bar_chart" size="md"></q-icon>
+                </q-item-section>
+                <q-item-section class="text-white q-pl-md">
+                  <q-item-label class="text-h6 text-weight-bolder">
+                    {{
+                      moneyFormat(
+                        filteredTransactionThisYear
+                          ? filteredTransactionThisYear.money
+                          : 0
+                      )
+                    }}
+                  </q-item-label>
+                  <q-item-label>This Year</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-card-section>
+          </q-card>
+        </transition>
 
-              <q-item-section>
-                <q-item-label>{{
-                  (trans.type == "debit" ? "+" : "-") + moneyFormat(trans.money)
-                }}</q-item-label>
-                <q-item-label caption lines="2">{{
-                  trans.description
-                }}</q-item-label>
-              </q-item-section>
-
-              <q-item-section side top>
-                <q-item-label caption :key="minuteTimer">
-                  {{ relativeDate(trans.timestamp) }}
-                </q-item-label>
-                <div>
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="edit"
-                    color="grey-4"
-                    @click="popupDetails(trans)"
-                  />
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="delete_outline"
-                    color="grey-4"
-                    @click="deleteTransaction(trans)"
-                  />
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    :icon="trans.stared ? 'star' : 'star_outline'"
-                    :color="trans.stared ? 'yellow' : 'grey-4'"
-                    @click="
-                      updateTransaction(trans.id, { stared: !trans.stared })
+        <transition
+          appear
+          enter-active-class="animated fadeIn"
+          leave-active-class="animated fadeOut"
+        >
+          <q-list separator>
+            <q-item-section>
+              <q-item-label header>Transaction History</q-item-label>
+            </q-item-section>
+            <transition-group
+              appear
+              enter-active-class="animated fadeIn slow"
+              leave-active-class="animated fadeOutBottomRight slow"
+            >
+              <q-item
+                :key="trans.id"
+                :ref="trans.id"
+                class="q-py-md"
+                style="cursor: pointer"
+                v-for="trans in transactions"
+                v-ripple.early="{ color: 'primary' }"
+              >
+                <q-item-section top avatar>
+                  <q-avatar
+                    :color="trans.type == 'debit' ? 'positive' : 'negative'"
+                    text-color="white"
+                    :icon="
+                      trans.type == 'debit'
+                        ? 'fas fa-angle-double-up'
+                        : 'fas fa-angle-double-down'
                     "
                   />
-                </div>
+                </q-item-section>
+
+                <q-item-section>
+                  <q-item-label>
+                    {{
+                      (trans.type == "debit" ? "+" : "-") +
+                      moneyFormat(trans.money)
+                    }}
+                  </q-item-label>
+                  <q-item-label caption lines="2">
+                    {{ trans.description }}
+                  </q-item-label>
+                </q-item-section>
+
+                <q-item-section side top>
+                  <q-item-label caption :key="minuteTimer">
+                    {{ relativeDate(trans.timestamp) }}
+                  </q-item-label>
+                  <div>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      ripple
+                      icon="edit"
+                      color="grey-6"
+                      @click="popupDetails(trans)"
+                    >
+                      <q-tooltip
+                        anchor="bottom middle"
+                        self="top middle"
+                        :offset="[10, 10]"
+                        :delay="100"
+                      >
+                        Edit
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      ripple
+                      color="grey-6"
+                      icon="delete_outline"
+                      @click="deleteTransaction(trans)"
+                    >
+                      <q-tooltip
+                        anchor="bottom middle"
+                        self="top middle"
+                        :offset="[10, 10]"
+                        :delay="100"
+                      >
+                        Delete
+                      </q-tooltip>
+                    </q-btn>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      ripple
+                      :icon="trans.stared ? 'star' : 'star_outline'"
+                      :color="trans.stared ? 'primary' : 'grey-6'"
+                      @click="
+                        updateTransaction(trans.id, { stared: !trans.stared })
+                      "
+                    >
+                      <q-tooltip
+                        anchor="bottom middle"
+                        self="top middle"
+                        :offset="[10, 10]"
+                        :delay="100"
+                      >
+                        Important
+                      </q-tooltip>
+                    </q-btn>
+                  </div>
+                </q-item-section>
+              </q-item>
+            </transition-group>
+            <q-item class="q-py-lg">
+              <q-item-section>
+                <q-item-label
+                  caption
+                  class="text-center text-grey-6 text-weight-light"
+                >
+                  <q-icon name="horizontal_rule" />
+                  End of History
+                  <q-icon name="horizontal_rule" />
+                </q-item-label>
               </q-item-section>
             </q-item>
-          </transition-group>
-        </q-list>
+          </q-list>
+        </transition>
       </div>
       <div v-else class="no-history text-center q-mt-xl">
         <q-icon name="fab fa-wpforms" size="100px" color="primary"></q-icon>
-        <div class="text-h5 text-primary">No Transaction History</div>
+        <div class="text-h5 text-primary">No Transaction</div>
       </div>
     </q-pull-to-refresh>
 
@@ -257,9 +324,10 @@
             </template>
             <template v-slot:append>
               <q-btn
+                flat
                 round
                 dense
-                flat
+                ripple
                 icon="clear"
                 v-if="newTransaction.description"
                 @click="newTransaction.description = ''"
@@ -298,18 +366,20 @@
         <q-card-actions align="right">
           <q-btn
             flat
-            ref="formDetailsReset"
+            ripple
             label="Cancel"
             type="reset"
             color="grey-6"
             v-close-popup
+            ref="formDetailsReset"
             @click="resetNewTransaction"
           />
           <q-btn
             flat
-            ref="formDetailsSubmit"
+            ripple
             label="Confirm"
             color="primary"
+            ref="formDetailsSubmit"
             v-close-popup="transactionStatus"
             @click="
               editing ? updateTransactionDetails(editing) : addNewTransaction()
@@ -326,6 +396,7 @@ import { defineComponent, ref, reactive } from "vue";
 import { mixinMethods, mixinTimer } from "src/mixins";
 import { useQuasar, date } from "quasar";
 import { mapActions, mapState, mapGetters } from "vuex";
+import { customAlert } from "src/assets/scripts/functions";
 
 export default defineComponent({
   name: "Budget App",
@@ -362,6 +433,20 @@ export default defineComponent({
     };
   },
 
+  beforeMount() {
+    if (this.userDetails.passphrase && !this.transactions.length)
+      this.firebaseGetAllTransactions();
+  },
+
+  mounted() {
+    if (
+      this.userDetails.passphrase &&
+      !this.transactions.length &&
+      this.transactions.length
+    )
+      this.firebaseGetAllTransactions();
+  },
+
   computed: {
     ...mapState("firebase_auth", ["userDetails"]),
     ...mapState("firebase_budget", ["transactions"]),
@@ -388,18 +473,16 @@ export default defineComponent({
     },
   },
 
-  created() {
-    if (!Object.keys(this.userDetails).length) this.$router.push("/");
-  },
-
   methods: {
     ...mapActions("firebase_budget", [
       "firebaseAddTransaction",
       "firebaseUpdateTransaction",
       "firebaseDeleteTransaction",
+      "firebaseGetAllTransactions",
+      "firebaseStopGettingTransactions",
     ]),
 
-    popupDetails(editTransaction = null) {
+    async popupDetails(editTransaction = null) {
       this.dialogDetails = !this.dialogDetails;
       if (editTransaction != null) {
         this.editing = editTransaction.id;
@@ -443,7 +526,7 @@ export default defineComponent({
       };
     },
     async addNewTransaction() {
-      this.customAlert("Adding new transaction...", "ongoing", 50);
+      customAlert("Adding new transaction...", "ongoing", 50);
       if (
         this.newTransaction.money &&
         this.newTransaction.type &&
@@ -460,18 +543,18 @@ export default defineComponent({
         const status = await this.firebaseAddTransaction(transaction);
         if (status.success) {
           setTimeout(() => {
-            this.customAlert("Transaction has been added.", "positive");
+            customAlert("Transaction has been added.", "positive");
           }, 300);
         } else {
           setTimeout(() => {
-            this.customAlert("Failed to add transaction.", "negative");
+            customAlert("Failed to add transaction.", "negative");
           }, 300);
         }
         this.resetNewTransaction();
       } else {
         this.transactionStatus = false;
         setTimeout(() => {
-          this.customAlert(
+          customAlert(
             "Failed! Plese complete all the details needed.",
             "warning"
           );
@@ -490,11 +573,11 @@ export default defineComponent({
           let status = this.firebaseDeleteTransaction(transaction);
           if (status) {
             setTimeout(() => {
-              this.customAlert("Transaction has been deleted.", "positive");
+              customAlert("Transaction has been deleted.", "positive");
             }, 100);
           } else {
             setTimeout(() => {
-              this.customAlert("Error deleting transaction.", "negative");
+              customAlert("Error deleting transaction.", "negative");
             }, 100);
           }
         });
@@ -516,7 +599,7 @@ export default defineComponent({
       });
       this.transactionStatus = true;
       setTimeout(() => {
-        this.customAlert("Transaction has been updated.", "positive");
+        customAlert("Transaction has been updated.", "positive");
       }, 300);
       this.resetNewTransaction();
     },
@@ -526,16 +609,6 @@ export default defineComponent({
       } else {
         this.newTransaction.type = this.transactionTypes[1];
       }
-    },
-    customAlert(message, type, timeout = 1000, position = null) {
-      if (!type || !message) return;
-      let config = {
-        type: type,
-        message: message,
-        timeout: timeout,
-      };
-      if (position) config.position = position;
-      this.$q.notify(config);
     },
     filterTransaction(type) {
       let result = reactive({
@@ -608,6 +681,10 @@ export default defineComponent({
         }
       });
     },
+  },
+
+  beforeUnmount() {
+    this.firebaseStopGettingTransactions();
   },
 });
 </script>

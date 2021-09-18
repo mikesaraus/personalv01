@@ -73,8 +73,8 @@ async function firebaseAddDiary({}, payload) {
     payload,
     { merge: true }
   )
-    .then((response) => {
-      result = { success: true, response: response };
+    .then(() => {
+      result = { success: true };
     })
     .catch((error) => {
       result = { success: false, response: error };
@@ -96,8 +96,8 @@ async function firebaseUpdateDiary({}, payload) {
       ),
       payload.updates
     )
-      .then((response) => {
-        result = { success: true, response: response };
+      .then(() => {
+        result = { success: true };
       })
       .catch((error) => {
         result = { success: false, response: error };
@@ -120,8 +120,8 @@ async function firebaseDeleteDiary({}, payload) {
       payload.id
     )
   )
-    .then((response) => {
-      result = { success: true, response: response };
+    .then(() => {
+      result = { success: true };
     })
     .catch((error) => {
       result = { success: false, response: error };

@@ -2,29 +2,43 @@
   <router-view />
 </template>
 <script>
+import { useQuasar } from "quasar";
 import { defineComponent } from "vue";
 import { mapActions } from "vuex";
 
 export default defineComponent({
   name: "App",
 
+  data() {
+    return {
+      $q: useQuasar(),
+    };
+  },
+
   methods: {
-    ...mapActions("firebase_auth", ["handleAuthStateChanged"]),
+    ...mapActions("firebase_auth", [
+      "handleAuthStateChanged",
+      "firebaseUpdateCurrentUser",
+    ]),
   },
 
   created() {
+    console.log(
+      "%c" + this.$myvar.test.text,
+      "color: grey; font-family:system-ui; font-size: 3rem; font-weight: bold"
+    );
+    console.log(
+      "%c" + this.$myvar.test.bug,
+      "color: silver; font-size: 1.5em; text-weight: bold;"
+    );
     this.handleAuthStateChanged();
   },
 
-  mounted() {
-    console.log(
-      "%cStop!",
-      "color:red;font-family:system-ui;font-size:4rem;-webkit-text-stroke: 1px black;font-weight:bold"
+  beforeMount() {
+    const userDetails = this.$q.localStorage.getItem(
+      this.$myvar.localStorage.userDetails
     );
-    console.log(
-      "%cThis is a browser feature intended for developers.",
-      "color:black; font-size: 1.5em; text-weight: bold;"
-    );
+    if (userDetails) this.firebaseUpdateCurrentUser(userDetails);
   },
 });
 </script>
