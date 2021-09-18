@@ -22,7 +22,7 @@
           flat
           round
           dense
-          ripple
+          ripple.early
           size="md"
           color="primary"
           @click="popupDetails"

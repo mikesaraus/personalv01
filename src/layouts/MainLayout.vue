@@ -235,7 +235,7 @@
         show-if-above
         :breakpoint="700"
         v-model="drawerUsersList"
-        v-if="userDetails.passphrase"
+        v-if="!isAuthPage && userDetails.passphrase"
         :side="$route.fullPath.includes($myvar.router.chat) ? 'left' : 'right'"
       >
         <div class="absolute-top bg-primary text-white" style="height: 170px">
