@@ -14,42 +14,52 @@ import { collections } from "../firebase_config";
 let transactionsRef;
 
 function firebaseGetAllTransactions({ state, commit }) {
-  const userId = this.state.firebase_auth.userDetails.userId;
-  const q = query(
-    collection(
-      firebaseDb,
-      collections.personal,
-      userId,
-      collections.personals.budget
-    ),
-    orderBy("timestamp")
-  );
-  transactionsRef = onSnapshot(q, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      const transactionDetails = change.doc.data();
-      const transactionId = change.doc.id;
-      if (change.type === "added") {
-        let index = state.transactions.findIndex((t) => t.id == transactionId);
-        if (index < 0) {
-          commit("addUnshiftTransactions", {
-            id: transactionId,
-            ...transactionDetails,
-          });
-        }
-      }
-      if (change.type === "modified") {
-        commit("updateTransaction", {
-          id: transactionId,
-          ...transactionDetails,
+  try {
+    const userId = this.state.firebase_auth.userDetails.userId;
+    const q = query(
+      collection(
+        firebaseDb,
+        collections.personal,
+        userId,
+        collections.personals.budget
+      ),
+      orderBy("timestamp")
+    );
+    transactionsRef = onSnapshot(q, (snapshot) => {
+      try {
+        snapshot.docChanges().forEach((change) => {
+          const transactionDetails = change.doc.data();
+          const transactionId = change.doc.id;
+          if (change.type === "added") {
+            let index = state.transactions.findIndex(
+              (t) => t.id == transactionId
+            );
+            if (index < 0) {
+              commit("addUnshiftTransactions", {
+                id: transactionId,
+                ...transactionDetails,
+              });
+            }
+          }
+          if (change.type === "modified") {
+            commit("updateTransaction", {
+              id: transactionId,
+              ...transactionDetails,
+            });
+          }
+          if (change.type === "removed") {
+            commit("removeTransaction", {
+              id: transactionId,
+            });
+          }
         });
-      }
-      if (change.type === "removed") {
-        commit("removeTransaction", {
-          id: transactionId,
-        });
+      } catch (error) {
+        console.error("Transaction Failure: ", error);
       }
     });
-  });
+  } catch (error) {
+    console.error("Transaction Error: ", error);
+  }
 }
 
 function firebaseStopGettingTransactions({ commit }) {

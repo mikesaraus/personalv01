@@ -1,17 +1,21 @@
-import { ref } from "vue";
-
 export default {
   data() {
     return {
-      timer: ref(null),
-      minuteTimer: ref(0),
+      timer: null,
+      secondsTimer: 0,
     };
   },
 
   created() {
     this.timer = setInterval(() => {
-      this.minuteTimer += 1;
+      this.secondsTimer += 1;
     }, 1000);
+  },
+
+  computed: {
+    minuteTimer() {
+      return Math.round(this.secondsTimer / 60);
+    },
   },
 
   methods: {

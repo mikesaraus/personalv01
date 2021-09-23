@@ -1,5 +1,5 @@
 <template>
-  <q-page class="relative-position">
+  <q-page ref="pageDiary">
     <transition
       appear
       enter-active-class="animated rubberBand slow"
@@ -42,12 +42,12 @@
     <q-separator class="divider" color="grey-2" size="10px" />
 
     <q-pull-to-refresh @refresh="refresh">
-      <div v-if="diary.length">
+      <div v-if="diary.length" class="paperbg">
         <q-timeline
           color="secondary"
-          class="paperbg q-pa-lg"
+          class="q-pa-lg"
           :layout="timelineLayout"
-          style="overflow-wrap: break-word"
+          style="overflow-wrap: anywhere"
         >
           <transition-group
             appear
@@ -60,7 +60,7 @@
               style="cursor: pointer"
               v-for="(post, i) in diary"
               @dblclick="toogleLike(post)"
-              v-ripple.early="{ color: 'primary' }"
+              v-ripple="{ color: 'primary' }"
               :side="i % 2 == 0 ? 'right' : 'left'"
               :color="post.liked ? 'primary' : 'secondary'"
               :icon="post.liked ? 'fas fa-heart' : 'far fa-heart'"
@@ -233,7 +233,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import { mapState, mapActions } from "vuex";
 import { mixinMethods, mixinTimer } from "src/mixins";
 import { useQuasar } from "quasar";
@@ -247,15 +247,15 @@ export default defineComponent({
   data() {
     return {
       $q: useQuasar(),
-      newPostContent: ref(""),
-      newPostTitle: ref(""),
-      dialogTitle: ref(false),
-      postStatus: ref(false),
-      editStatus: ref(false),
-      dialogEdit: ref(false),
-      editPostTitle: ref(""),
-      editPostContent: ref(""),
-      editPostId: ref(""),
+      newPostContent: "",
+      newPostTitle: "",
+      dialogTitle: false,
+      postStatus: false,
+      editStatus: false,
+      dialogEdit: false,
+      editPostTitle: "",
+      editPostContent: "",
+      editPostId: "",
     };
   },
 
@@ -293,6 +293,7 @@ export default defineComponent({
 
     refresh(done) {
       setTimeout(() => {
+        this.firebaseGetAllDiary();
         done();
       }, 1000);
     },
@@ -306,7 +307,7 @@ export default defineComponent({
         };
         let status = await this.firebaseAddDiary(post);
         if (status.success) {
-          this.postStatus = ref(true);
+          this.postStatus = true;
           setTimeout(() => {
             customAlert("Story has been added.", "positive");
           }, 300);
@@ -323,15 +324,15 @@ export default defineComponent({
       }
     },
     resetNewPost() {
-      this.newPostTitle = ref("");
-      this.newPostContent = ref("");
-      this.postStatus = ref(false);
+      this.newPostTitle = "";
+      this.newPostContent = "";
+      this.postStatus = false;
     },
     resetEditPost() {
-      this.editPostTitle = ref("");
-      this.editPostContent = ref("");
-      this.editPostId = ref("");
-      this.editStatus = ref(false);
+      this.editPostTitle = "";
+      this.editPostContent = "";
+      this.editPostId = "";
+      this.editStatus = false;
     },
     toogleLike(post) {
       this.firebaseUpdateDiary({
@@ -357,7 +358,7 @@ export default defineComponent({
           },
         });
         if (status.success) {
-          this.editStatus = ref(true);
+          this.editStatus = true;
           setTimeout(() => {
             customAlert("Story has been modified.", "positive");
           }, 300);
@@ -386,25 +387,15 @@ export default defineComponent({
 
 <style lang="sass">
 
-.paperbg::after
-  content: ""
-  display: block
-  position: absolute
-  left: 0
-  right: 0
-  top: 0
-  bottom: 0
-  z-index: 0
-  opacity: 0.1
+.paperbg
+  background-color: $grey-1
   background-size: 25px 25px
-  background-image:  repeating-linear-gradient(0deg, #444cf7, #444cf7 1px, #e5e5f7 1px, #e5e5f7)
+  background-image:  repeating-linear-gradient(0deg, $grey-3, $grey-3 1px, $grey-1 1px, $grey-1)
 
-.paperbg *
-  z-index: 1
 
 .new-post, .new-post
-    font-size: 19px
-    line-height: 1.4 !important
+  font-size: 19px
+  line-height: 1.4 !important
 
 .divider
   border-top: 1px solid

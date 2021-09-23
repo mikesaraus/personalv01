@@ -10,33 +10,49 @@
           v-ripple
           clickable
           :key="key"
-          v-for="(user, key) in users"
+          v-for="(user, key) in visibleUsers"
           @mouseover="userOnHover = key"
-          :to="$myvar.router.chat + '/' + key"
+          :to="$myvar.router.chat.url + '/' + key"
         >
           <q-item-section avatar>
-            <q-avatar
-              round
-              text-color="white"
-              :color="
-                user.online ? (user.invisible ? 'grey-9' : 'primary') : 'grey-6'
-              "
-            >
+            <q-avatar round text-color="white" color="grey-6">
               <q-icon name="fas fa-mask" />
               <q-badge
                 rounded
                 floating
-                transparent
                 align="middle"
-                class="q-pa-none q-ma-none"
+                class="q-pa-none q-ma-none transparent"
                 style="bottom: -3px; right: -3px; top: unset"
-                v-if="user.online && !user.invisible"
+                v-if="
+                  (user.online && !user.invisible) ||
+                  (notifMessages[key] && notifMessages[key].length)
+                "
               >
                 <q-icon
-                  size="13px"
-                  color="secondary"
-                  name="circle"
-                  class="bg-white"
+                  :size="
+                    notifMessages[key] && notifMessages[key].length
+                      ? '10px'
+                      : '13px'
+                  "
+                  :color="
+                    notifMessages[key] && notifMessages[key].length
+                      ? user.online && !user.invisible
+                        ? 'white'
+                        : 'primary'
+                      : 'secondary'
+                  "
+                  :name="
+                    notifMessages[key] && notifMessages[key].length
+                      ? 'add'
+                      : 'circle'
+                  "
+                  :class="
+                    notifMessages[key] && notifMessages[key].length
+                      ? user.online && !user.invisible
+                        ? 'bg-primary q-pa-xs'
+                        : 'bg-grey-4 q-pa-xs'
+                      : 'bg-white'
+                  "
                   style="border-radius: 50%"
                 />
               </q-badge>
@@ -44,7 +60,15 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label>{{ user.name }}</q-item-label>
+            <q-item-label
+              :class="
+                notifMessages[key] && notifMessages[key].length
+                  ? 'text-weight-medium'
+                  : ''
+              "
+            >
+              {{ user.name }}
+            </q-item-label>
           </q-item-section>
 
           <q-item-section side>
@@ -98,25 +122,25 @@
 
 <script>
 import { customAlert } from "src/assets/scripts/functions";
-import { defineComponent, ref } from "vue";
+import { mixinOtherUserDetails } from "src/mixins";
+import { defineComponent } from "vue";
 import { mapGetters, mapActions, mapState } from "vuex";
 
 export default defineComponent({
   name: "Users Page",
 
+  mixins: [mixinOtherUserDetails],
+
   data() {
     return {
-      userOnHover: ref(null),
+      userOnHover: null,
     };
   },
 
   computed: {
-    ...mapGetters("firebase_auth", ["users"]),
+    ...mapGetters("firebase_auth", ["users", "visibleUsers"]),
+    ...mapGetters("firebase_notification", ["notifMessages"]),
     ...mapState("firebase_auth", ["userDetails"]),
-
-    otherUserId() {
-      return this.$route.params.otherUserId;
-    },
   },
 
   methods: {
@@ -168,9 +192,9 @@ export default defineComponent({
 
 <style lang="sass">
 .no-history
-  opacity: 0.5
+   opacity: 0.5
 
 .q-item.q-router-link--active, .q-item--active
-  background-color: $grey-3
-  font-weight: bold
+   background-color: $grey-3
+   font-weight: bold
 </style>

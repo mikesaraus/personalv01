@@ -14,43 +14,51 @@ import { collections } from "../firebase_config";
 let diaryRef;
 
 function firebaseGetAllDiary({ state, commit }) {
-  const userId = this.state.firebase_auth.userDetails.userId;
-  const q = query(
-    collection(
-      firebaseDb,
-      collections.personal,
-      userId,
-      collections.personals.diary
-    ),
-    orderBy("timestamp")
-  );
-  diaryRef = onSnapshot(q, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      const diaryDetails = change.doc.data();
-      const diaryId = change.doc.id;
-      if (change.type === "added") {
-        let index = state.diary.findIndex((t) => t.id == diaryId);
-        if (index < 0) {
-          commit("addUnshiftDiary", {
-            id: diaryId,
-            ...diaryDetails,
-          });
-        }
-      }
-      if (change.type === "modified") {
-        commit("updateDiary", {
-          id: diaryId,
-          ...diaryDetails,
+  try {
+    const userId = this.state.firebase_auth.userDetails.userId;
+    const q = query(
+      collection(
+        firebaseDb,
+        collections.personal,
+        userId,
+        collections.personals.diary
+      ),
+      orderBy("timestamp")
+    );
+    diaryRef = onSnapshot(q, (snapshot) => {
+      try {
+        snapshot.docChanges().forEach((change) => {
+          const diaryDetails = change.doc.data();
+          const diaryId = change.doc.id;
+          if (change.type === "added") {
+            let index = state.diary.findIndex((t) => t.id == diaryId);
+            if (index < 0) {
+              commit("addUnshiftDiary", {
+                id: diaryId,
+                ...diaryDetails,
+              });
+            }
+          }
+          if (change.type === "modified") {
+            commit("updateDiary", {
+              id: diaryId,
+              ...diaryDetails,
+            });
+          }
+          if (change.type === "removed") {
+            commit("removeDiary", {
+              id: diaryId,
+              ...diaryDetails,
+            });
+          }
         });
-      }
-      if (change.type === "removed") {
-        commit("removeDiary", {
-          id: diaryId,
-          ...diaryDetails,
-        });
+      } catch (error) {
+        console.error("Diary Failure: ", error);
       }
     });
-  });
+  } catch (error) {
+    console.error("Diary Error: ", error);
+  }
 }
 
 function firebaseStopGettingDiary({ commit }) {

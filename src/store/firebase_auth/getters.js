@@ -27,4 +27,16 @@ function users(state) {
   return usersFiltered;
 }
 
-export { users };
+function visibleUsers(state, getters) {
+  let usersFiltered = reactive({});
+  Object.keys(getters.users).forEach((key) => {
+    if (check.type.isObject(getters.users[key])) {
+      if (!getters.users[key]["invisible"]) {
+        usersFiltered[key] = getters.users[key];
+      }
+    }
+  });
+  return usersFiltered;
+}
+
+export { users, visibleUsers };

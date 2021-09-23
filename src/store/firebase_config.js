@@ -3,9 +3,13 @@ const collections = {
   chats: "chats",
   personal: "personal",
   personals: {
-    budget: "transactions",
     diary: "diary",
+    budget: "transactions",
+    notifications: "notifications",
     pgpkeys: "pgpkeys",
+  },
+  notifications: {
+    messages: "messages",
   },
 };
 export { collections };

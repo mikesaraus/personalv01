@@ -14,7 +14,8 @@
               color="secondary"
               name="check_circle"
               v-if="
-                $route.fullPath.includes($myvar.router.chat + '/') &&
+                $route.fullPath.includes($myvar.router.chat.url + '/') &&
+                otherUserId &&
                 otherUserDetails.name &&
                 otherUserDetails.online &&
                 !otherUserDetails.invisible
@@ -30,10 +31,7 @@
                   ? 'bg-secondary text-grey-9'
                   : 'bg-grey-6 text-grey-9'
               "
-              v-if="
-                $route.fullPath.includes($myvar.router.chat + '/') &&
-                otherUserDetails.name
-              "
+              v-if="otherUserDetails.name"
             >
               <q-icon
                 size="xs"
@@ -136,9 +134,25 @@
                 </div>
                 <q-separator vertical inset class="q-mx-lg" />
                 <div class="column col items-center">
-                  <q-avatar color="primary" text-color="white" size="72px">
-                    {{ userDetails.name.charAt(0) }}
-                  </q-avatar>
+                  <q-circular-progress
+                    show-value
+                    :min="0"
+                    :max="30"
+                    :thickness="0.1"
+                    :indeterminate="!isChatPage"
+                    size="72px"
+                    font-size="25px"
+                    color="secondary"
+                    track-color="grey-3"
+                    center-color="primary"
+                    class="text-weight-bold text-white"
+                  >
+                    {{
+                      userDetails.name && userDetails.passphrase
+                        ? userDetails.name.charAt(0)
+                        : "X"
+                    }}
+                  </q-circular-progress>
                   <div class="text-body2 q-mt-md text-center">
                     {{ userDetails.name }}
                   </div>
@@ -154,7 +168,7 @@
                   icon="message"
                   color="primary"
                   class="q-ma-xs q-px-sm"
-                  :to="$myvar.router.chat"
+                  :to="$myvar.router.chat.url"
                 >
                   <q-tooltip
                     anchor="bottom middle"
@@ -162,7 +176,7 @@
                     :offset="[10, 10]"
                     :delay="100"
                   >
-                    Chat
+                    {{ $myvar.router.chat.tooltip }}
                   </q-tooltip>
                 </q-btn>
                 <q-btn
@@ -173,7 +187,7 @@
                   color="primary"
                   icon="analytics"
                   class="q-ma-xs q-px-sm"
-                  :to="$myvar.router.budget"
+                  :to="$myvar.router.budget.url"
                 >
                   <q-tooltip
                     anchor="bottom middle"
@@ -181,7 +195,7 @@
                     :offset="[10, 10]"
                     :delay="100"
                   >
-                    Budget
+                    {{ $myvar.router.budget.tooltip }}
                   </q-tooltip>
                 </q-btn>
                 <q-btn
@@ -192,7 +206,7 @@
                   color="primary"
                   icon="bookmark"
                   class="q-ma-xs q-px-sm"
-                  :to="$myvar.router.diary"
+                  :to="$myvar.router.diary.url"
                 >
                   <q-tooltip
                     anchor="bottom middle"
@@ -200,7 +214,7 @@
                     :offset="[10, 10]"
                     :delay="100"
                   >
-                    Diary
+                    {{ $myvar.router.diary.tooltip }}
                   </q-tooltip>
                 </q-btn>
               </div>
@@ -236,23 +250,35 @@
         :breakpoint="700"
         v-model="drawerUsersList"
         v-if="!isAuthPage && userDetails.passphrase"
-        :side="$route.fullPath.includes($myvar.router.chat) ? 'left' : 'right'"
+        :side="
+          $route.fullPath.includes($myvar.router.chat.url) ||
+          $q.platform.is.mobile
+            ? 'left'
+            : 'right'
+        "
       >
         <div class="absolute-top bg-primary text-white" style="height: 170px">
           <div class="absolute-bottom bg-transparent q-ma-md">
-            <q-avatar
+            <q-circular-progress
+              show-value
+              :min="0"
+              :max="30"
+              :thickness="0.1"
+              indeterminate
               size="56px"
-              color="white text-weight-bold"
-              class="q-mb-sm"
-              text-color="primary"
+              font-size="25px"
+              color="secondary"
+              track-color="grey-3"
+              center-color="primary"
+              class="text-weight-bold"
             >
               {{
                 userDetails.name && userDetails.passphrase
                   ? userDetails.name.charAt(0)
                   : "X"
               }}
-            </q-avatar>
-            <div class="text-weight-bold">
+            </q-circular-progress>
+            <div class="text-weight-bold text-subtitle1">
               {{
                 userDetails.passphrase && userDetails.name
                   ? userDetails.name
@@ -281,15 +307,14 @@
     </transition>
 
     <q-page-scroller
-      :offset="[15, 15]"
+      :offset="[10, 10]"
       :scroll-offset="170"
       position="bottom-right"
-      v-if="!$route.fullPath.includes($myvar.router.chat)"
+      v-if="!$route.fullPath.includes($myvar.router.chat.url)"
     >
       <q-btn
         fab
         ripple
-        size="xs"
         color="primary"
         style="opacity: 0.75"
         icon="keyboard_arrow_up"
@@ -300,9 +325,9 @@
 
 <script>
 import { myvar } from "src/boot/firebase";
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import { mapState, mapActions } from "vuex";
-import { copyToClipboard, getCssVar } from "quasar";
+import { copyToClipboard, getCssVar, LocalStorage, useQuasar } from "quasar";
 import { mixinOtherUserDetails, mixinLogout } from "src/mixins/";
 
 export default defineComponent({
@@ -316,8 +341,9 @@ export default defineComponent({
 
   data() {
     return {
+      $q: useQuasar,
       bootvar: myvar,
-      drawerUsersList: ref(false),
+      drawerUsersList: false,
       primaryColor: getCssVar("primary"),
       secondaryColor: getCssVar("secondary"),
     };
@@ -328,21 +354,40 @@ export default defineComponent({
 
     title() {
       let currentPath = this.$route.fullPath;
-      if (currentPath == myvar.router.budget) return "Accounting";
-      else if (currentPath == myvar.router.chat) return "Private Chat";
-      else if (currentPath.includes(myvar.router.chat + "/"))
-        return this.otherUserDetails.name
+      if (currentPath == myvar.router.budget.url)
+        return myvar.router.budget.title;
+      else if (currentPath == myvar.router.chat.url)
+        return myvar.router.chat.title;
+      else if (
+        currentPath.includes(myvar.router.chat.url + "/") &&
+        (this.otherUserId || this.isSelfChat)
+      )
+        return this.isSelfChat
+          ? "Just You"
+          : this.otherUserDetails.name
           ? this.otherUserDetails.name
-          : "Private Chat";
-      else if (currentPath == myvar.router.diary) return "Life Events";
-      else if (currentPath == myvar.router.auth) return myvar.test.text;
+          : myvar.router.chat.title;
+      else if (currentPath == myvar.router.diary.url)
+        return myvar.router.diary.title;
+      else if (currentPath == myvar.router.auth.url)
+        return myvar.router.auth.title;
     },
     isAuthPage() {
-      if (this.$route.fullPath == myvar.router.auth) return true;
+      if (this.$route.fullPath == myvar.router.auth.url) return true;
       return false;
     },
-    otherUserId() {
-      return this.$route.params.otherUserId;
+    isChatPage() {
+      if (this.$route.fullPath.includes(myvar.router.chat.url)) return true;
+      return false;
+    },
+    isLogin() {
+      if (
+        this.userDetails &&
+        this.userDetails.passphrase &&
+        LocalStorage.has(myvar.localStorage.userDetails)
+      )
+        return true;
+      return false;
     },
   },
 
@@ -360,9 +405,17 @@ export default defineComponent({
     },
     otherUserId: {
       async handler(val) {
-        if (!val && this.$route.fullPath.includes(myvar.router.chat)) {
-          this.drawerUsersList = ref(true);
+        if (!val && this.$route.fullPath.includes(myvar.router.chat.url)) {
+          this.drawerUsersList = true;
         }
+      },
+      deep: true,
+    },
+    isLogin: {
+      async handler(val) {
+        val
+          ? this.firebaseGetNotifications()
+          : this.firebaseStopGettingNotifications();
       },
       deep: true,
     },
@@ -375,19 +428,16 @@ export default defineComponent({
     ]),
     ...mapActions("firebase_chat", ["firebaseDeleteMessage"]),
     ...mapActions("firebase_budget", ["firebaseStopGettingTransactions"]),
+    ...mapActions("firebase_notification", [
+      "firebaseGetNotifications",
+      "firebaseStopGettingNotifications",
+    ]),
 
     updateInvisibility() {
       this.firebaseUpdateUser({
         userId: this.userDetails.userId,
         updates: { invisible: !this.userDetails.invisible },
       });
-    },
-    chatBack() {
-      if (window.history.state.back) {
-        this.$router.back();
-      } else {
-        this.$router.push(myvar.router.chat);
-      }
     },
     async autoRemoveMessage(options) {
       await this.firebaseDeleteMessage({
@@ -404,6 +454,7 @@ export default defineComponent({
               .catch((e) => {
                 console.log("Message deleted, no backup!", e.message);
               });
+            myvar.messages.todelete.splice([options.id], 1);
           } else {
             console.warn("Message deletion failed!");
           }
@@ -411,7 +462,6 @@ export default defineComponent({
         .catch((error) => {
           console.error("Delete Error: ", error.message);
         });
-      myvar.messages.todelete.splice([options.id], 1);
     },
   },
 });

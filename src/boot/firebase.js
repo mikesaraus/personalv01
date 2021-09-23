@@ -1,6 +1,6 @@
 import { boot } from "quasar/wrappers";
 import { initializeApp } from "firebase/app";
-import { getFirestore, refEqual } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { reactive } from "vue";
 
@@ -18,32 +18,58 @@ const firebaseApp = initializeApp(firebaseConfig);
 const firebaseAuth = getAuth(firebaseApp);
 const firebaseDb = getFirestore(firebaseApp);
 
-const myvar = reactive({
+let myvar = reactive({
   localStorage: {
     userDetails: "userDetails",
   },
-  route: {
-    defaultAfterLogin: "/chat",
-  },
-  router: {
-    auth: "/",
-    chat: "/chat",
-    budget: "/budget",
-    diary: "/diary",
-  },
-  messages: {
-    todelete: [],
-  },
-  test: {
-    text: "Hello, friend.",
+  default: {
+    message: "Hello, friend.",
     bug: `
 A bug is never just a mistake.
 It represents something bigger.
 An error of thinking.
 That makes you who you are.
     `,
+    out_message: "Goodbye, friend!",
   },
+  router: {
+    default: {},
+    auth: {
+      url: "/",
+      title: "Hello, friend.",
+      tooltip: "Auth",
+    },
+    chat: {
+      url: "/chat",
+      title: "Private Chat",
+      tooltip: "Chat",
+    },
+    budget: {
+      url: "/budget",
+      title: "Accounting",
+      tooltip: "Budget",
+    },
+    diary: {
+      url: "/diary",
+      title: "Life Events",
+      tooltip: "Diary",
+    },
+  },
+  messages: {
+    type: {
+      text: "text",
+      encrypted: "encrypted",
+      autodelete: "autodelete",
+      encrypted_autodelete: "encrypted_autodelete",
+    },
+    lastEvent: null,
+    todelete: [],
+  },
+  audio: { notification: new Audio("notification.mp3") },
 });
+
+// Set Default URL After Login
+myvar.router.default.afterLogin = myvar.router.chat;
 
 export default boot(({ app }) => {
   app.config.globalProperties.$myvar = myvar;

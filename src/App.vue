@@ -1,10 +1,13 @@
 <template>
-  <router-view />
+  <router-view v-slot="{ Component }">
+    <component :is="Component" />
+  </router-view>
 </template>
 <script>
 import { useQuasar } from "quasar";
 import { defineComponent } from "vue";
 import { mapActions } from "vuex";
+import { greetings } from "./assets/scripts/functions";
 
 export default defineComponent({
   name: "App",
@@ -23,14 +26,7 @@ export default defineComponent({
   },
 
   created() {
-    console.log(
-      "%c" + this.$myvar.test.text,
-      "color: grey; font-family:system-ui; font-size: 3rem; font-weight: bold"
-    );
-    console.log(
-      "%c" + this.$myvar.test.bug,
-      "color: silver; font-size: 1.5em; text-weight: bold;"
-    );
+    greetings.console();
     this.handleAuthStateChanged();
   },
 

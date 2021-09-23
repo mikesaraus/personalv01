@@ -22,7 +22,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { collections } from "../firebase_config";
-import { base64 } from "assets/scripts/functions";
+import { base64, greetings } from "assets/scripts/functions";
 import { LocalStorage } from "quasar";
 let usersRef, pwd;
 
@@ -121,13 +121,24 @@ async function logoutUser({ state, commit, dispatch }) {
       updates: {
         online: false,
       },
-    });
-    await dispatch("firebaseStopGettingUsers");
-    if (LocalStorage.has(myvar.localStorage.userDetails))
-      LocalStorage.remove(myvar.localStorage.userDetails);
-    if (firebaseAuth) await signOut(firebaseAuth);
-    commit("setUserDetails", {});
-    result = { success: true };
+    })
+      .then(async (res) => {
+        if (res.success) {
+          result = { success: true, response: res };
+        } else {
+          result = { success: false, response: res };
+        }
+        await dispatch("stopAllProcessOnLogout");
+        if (LocalStorage.has(myvar.localStorage.userDetails))
+          LocalStorage.remove(myvar.localStorage.userDetails);
+        if (firebaseAuth) await signOut(firebaseAuth);
+        commit("setUserDetails", {});
+        console.clear();
+        greetings.console();
+      })
+      .catch((error) => {
+        result = { success: false, response: error };
+      });
   } catch (error) {
     result = { success: false, response: error };
   }
@@ -157,7 +168,7 @@ async function decryptTest({ commit, dispatch }, payload) {
           publicKeysArmored: [base64.decode(userDetails.pgp.publicKey)],
           privateKeyArmored: base64.decode(userDetails.pgp.privateKey),
           passphrase: base64.decode(payload.passphrase),
-          plainText: myvar.test.text,
+          plainText: myvar.default.bug,
         }) // Text Encryption
         .then(async (encryptedMsg) => {
           if (encryptedMsg.success) {
@@ -169,7 +180,10 @@ async function decryptTest({ commit, dispatch }, payload) {
                 encryptedText: encryptedMsg.response,
               }) // Test Decryption
               .then(async (plainMsg) => {
-                if (plainMsg.success && plainMsg.response === myvar.test.text) {
+                if (
+                  plainMsg.success &&
+                  plainMsg.response === myvar.default.bug
+                ) {
                   // Accept if Valid
                   await commit("updateCurrentUser", {
                     ...payload.userDetails,
@@ -236,13 +250,16 @@ function handleAuthStateChanged({ dispatch }) {
                 userDetails: userDetails,
                 passphrase: pwd,
               });
-              if (window.history.state.back) {
+              if (
+                window.history.state.back &&
+                window.history.state.back != myvar.router.auth.url
+              ) {
                 this.$router.back();
               } else {
-                this.$router.push(myvar.route.defaultAfterLogin);
+                this.$router.replace(myvar.router.default.afterLogin.url);
               }
             } else {
-              this.$router.push("/");
+              this.$router.replace(myvar.router.auth.url);
             }
           }
         } else {
@@ -422,7 +439,28 @@ async function firebaseUpdateProfile({}, payload) {
   return result;
 }
 
+async function stopAllProcessOnLogout({ dispatch }) {
+  await dispatch(
+    "firebase_notification/firebaseStopGettingNotifications",
+    null,
+    {
+      root: true,
+    }
+  );
+  await dispatch("firebase_chat/firebaseStopGettingMessages", null, {
+    root: true,
+  });
+  await dispatch("firebase_budget/firebaseStopGettingTransactions", null, {
+    root: true,
+  });
+  await dispatch("firebase_diary/firebaseStopGettingDiary", null, {
+    root: true,
+  });
+  await dispatch("firebaseStopGettingUsers");
+}
+
 export {
+  stopAllProcessOnLogout,
   firebaseUpdateProfile,
   firebaseUpdateEmail,
   firebaseSendEmailVerification,

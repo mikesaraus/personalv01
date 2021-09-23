@@ -1,5 +1,23 @@
 import { Buffer } from "buffer";
 import { Notify } from "quasar";
+import { myvar } from "src/boot/firebase";
+
+// Greetings
+function greetings_console() {
+  console.log(
+    "%c" + myvar.default.message,
+    "color: grey; font-family:system-ui; font-size: 3rem; font-weight: bold"
+  );
+  console.log(
+    "%c" + myvar.default.bug,
+    "color: silver; font-size: 1.5em; text-weight: bold;"
+  );
+}
+
+const greetings = {
+  console: greetings_console,
+};
+// End Greetings
 
 // Base64 Function
 function base64_encode(text) {
@@ -32,9 +50,9 @@ function customAlert(
   moreOptions = {}
 ) {
   let config = {
-    message: message,
-    timeout: timeout,
     progress: true,
+    message: message,
+    timeout: timeout ? timeout : 1000,
   };
   if (type) config.type = type;
   if (position) config.position = position;
@@ -53,11 +71,54 @@ function checkIfObject(obj) {
   return Object.prototype.toString.call(obj) === "[object Object]";
 }
 
+function inputValidate(toResolve, timeout = 1000) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (checkIfObject(toResolve)) {
+        if (toResolve.type && toResolve.value) {
+          switch (toResolve.type.toLowerCase()) {
+            case "email":
+              resolve(
+                regexp.email.test(String(toResolve.value).toLowerCase()) ||
+                  "Invalid Email Address"
+              );
+              break;
+
+            case "password":
+              resolve(
+                regexp.password.test(String(toResolve.value).toLowerCase()) ||
+                  "Password is Weak"
+              );
+              break;
+
+            default:
+              resolve(false, "");
+              break;
+          }
+        } else {
+          resolve(false, "");
+        }
+      }
+      resolve(toResolve);
+    }, timeout);
+  });
+}
+
 const check = {
   type: {
     isObject: checkIfObject,
   },
+  input: inputValidate,
 };
 // End of Checker
 
-export { base64, check, customAlert };
+// Regular Expressions
+const regexp = {
+  email:
+    /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/,
+  password:
+    /^((?=(.*\d){1,})(?=(.*[!@#$%^&*()\-__+.]){1,})(?=(.*[a-zA-Z]){3,})).{9,}$/,
+};
+// End of Regular Expressions
+
+export { greetings, base64, check, regexp, customAlert };

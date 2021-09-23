@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <q-page ref="pageBudget">
     <q-pull-to-refresh @refresh="refresh">
       <div
         class="
@@ -10,6 +10,7 @@
           bg-grey-3
           text-grey-6
         "
+        v-ripple="{ color: 'primary' }"
       >
         <span class="text-caption" style="vertical-align: super">PHP</span>
         <span
@@ -22,7 +23,7 @@
           flat
           round
           dense
-          ripple.early
+          ripple
           size="md"
           color="primary"
           @click="popupDetails"
@@ -37,15 +38,15 @@
           enter-active-class="animated bounce slow"
           leave-active-class="animated fadeOutDown slow"
         >
-          <q-card class="bg-transparent no-shadow no-border">
+          <q-card class="transparent no-shadow no-border">
             <q-card-section
               class="
                 fit
                 row
                 wrap
                 full-width
-                justify-evenly
                 items-center
+                justify-evenly
                 content-center
               "
             >
@@ -55,6 +56,7 @@
                   q-mx-sm q-mt-sm
                   bg-primary
                 "
+                v-ripple="{ color: 'white' }"
               >
                 <q-item-section side class="q-pa-md text-white bg-accent">
                   <q-icon name="analytics" color="white" size="md"></q-icon>
@@ -76,6 +78,7 @@
               <q-item
                 style="background-color: #f37169"
                 class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
+                v-ripple="{ color: 'white' }"
               >
                 <q-item-section
                   side
@@ -101,6 +104,7 @@
               <q-item
                 style="background-color: #e4b021"
                 class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
+                v-ripple="{ color: 'white' }"
               >
                 <q-item-section
                   side
@@ -126,6 +130,7 @@
               <q-item
                 style="background-color: #a270b1"
                 class="col-xs-12 col-sm-4 col-md-2 col-lg-2 q-mx-sm q-mt-sm"
+                v-ripple="{ color: 'white' }"
               >
                 <q-item-section
                   side
@@ -171,7 +176,7 @@
                 class="q-py-md"
                 style="cursor: pointer"
                 v-for="trans in transactions"
-                v-ripple.early="{ color: 'primary' }"
+                v-ripple="{ color: 'primary' }"
               >
                 <q-item-section top avatar>
                   <q-avatar
@@ -293,31 +298,31 @@
         <div class="q-px-lg">
           <q-input
             autofocus
-            class="q-py-sm"
-            placeholder="Money"
-            reverse-fill-mask
-            type="number"
             lazy-rules
-            :rules="[ruleValidate]"
+            tabindex="1"
+            type="number"
+            class="q-py-sm"
+            ref="formDetails1"
+            reverse-fill-mask
+            placeholder="Money"
             v-model="newTransaction.money"
             @keyup="updateNewTransactionType"
             @focus="updateNewTransactionType"
-            tabindex="1"
-            ref="formDetails1"
+            :rules="[(val) => checker.input(!!val || '', 500)]"
           >
             <template v-slot:prepend>₱</template>
           </q-input>
 
           <q-input
             autogrow
-            class="q-py-sm"
-            placeholder="Description"
-            maxlength="128"
             lazy-rules
-            :rules="[ruleValidate]"
-            v-model="newTransaction.description"
             tabindex="2"
+            maxlength="128"
+            class="q-py-sm"
             ref="formDetails2"
+            placeholder="Description"
+            v-model="newTransaction.description"
+            :rules="[(val) => checker.input(!!val || '', 500)]"
           >
             <template v-slot:prepend>
               <q-icon round dense flat size="xs" name="fab fa-wpforms" />
@@ -336,14 +341,14 @@
           </q-input>
 
           <q-select
-            options-selected-class="text-primary"
-            v-model="newTransaction.type"
-            :options="transactionTypes"
             label="Type"
-            lazy-rules
-            :rules="[ruleValidate]"
             tabindex="3"
+            lazy-rules
             ref="formDetails3"
+            :options="transactionTypes"
+            v-model="newTransaction.type"
+            :rules="[(val) => checker.input(!!val || '', 500)]"
+            options-selected-class="text-primary"
           >
             <template v-slot:prepend>
               <q-icon round dense flat size="xs" name="vertical_align_center" />
@@ -392,11 +397,11 @@
 </template>
 
 <script>
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, reactive } from "vue";
 import { mixinMethods, mixinTimer } from "src/mixins";
 import { useQuasar, date } from "quasar";
 import { mapActions, mapState, mapGetters } from "vuex";
-import { customAlert } from "src/assets/scripts/functions";
+import { customAlert, check } from "src/assets/scripts/functions";
 
 export default defineComponent({
   name: "Budget App",
@@ -406,8 +411,9 @@ export default defineComponent({
   data() {
     return {
       $q: useQuasar(),
-      transactionStatus: ref(null),
-      dialogDetails: ref(false),
+      checker: check,
+      transactionStatus: null,
+      dialogDetails: false,
       transactionTypes: [
         {
           label: "Debit",
@@ -423,8 +429,8 @@ export default defineComponent({
         },
       ],
       newTransaction: {
-        money: ref(null),
-        type: ref(null),
+        money: null,
+        type: null,
         description: "",
         stared: false,
         timestamp: Date.now(),
@@ -497,15 +503,9 @@ export default defineComponent({
     },
     refresh(done) {
       setTimeout(() => {
+        this.firebaseGetAllTransactions();
         done();
       }, 1000);
-    },
-    ruleValidate(val) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve(!!val || "");
-        }, 1000);
-      });
     },
     ruleReset() {
       inputRef.value.resetValidation();
@@ -518,9 +518,9 @@ export default defineComponent({
     },
     resetNewTransaction() {
       this.newTransaction = {
-        money: ref(null),
-        type: ref(null),
-        description: ref(null),
+        money: null,
+        type: null,
+        description: null,
         stared: false,
         timestamp: Date.now(),
       };
