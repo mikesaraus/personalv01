@@ -5,18 +5,22 @@ function addNotifications(state, payload) {
 }
 
 function updateNotifications(state, payload) {
+  // check if notification type exists in state
   if (state.notifications[payload.notifId]) {
     if (
       state.notifications[payload.notifId] &&
       Object.keys(state.notifications[payload.notifId]).length
     ) {
+      // notification type exist with value
       console.log("I am here");
       Object.keys(state.notifications[payload.notifId]).forEach((key) => {
+        // check if old key from state does not exist in new payload then delete
         if (!payload.details[key])
           delete state.notifications[payload.notifId][key];
       });
     }
     if (payload.details && Object.keys(payload.details).length) {
+      // loop all the new keys to add
       Object.keys(payload.details).forEach((key) => {
         state.notifications[payload.notifId][key] = payload.details[key];
       });
