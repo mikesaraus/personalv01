@@ -32,7 +32,7 @@
         <p class="text-caption">Available Balance</p>
       </div>
 
-      <div v-if="transactions.length">
+      <div v-if="transactions.length || preloader">
         <transition
           appear
           enter-active-class="animated bounce slow"
@@ -62,7 +62,10 @@
                   <q-icon name="analytics" color="white" size="md"></q-icon>
                 </q-item-section>
                 <q-item-section class="text-white q-pl-md">
-                  <q-item-label class="text-h6 text-weight-bolder">
+                  <q-item-label v-if="preloader">
+                    <q-skeleton type="text" />
+                  </q-item-label>
+                  <q-item-label v-else class="text-h6 text-weight-bolder">
                     {{
                       moneyFormat(
                         filteredTransactionThisDay
@@ -88,7 +91,10 @@
                   <q-icon name="date_range" size="md"></q-icon>
                 </q-item-section>
                 <q-item-section class="text-white q-pl-md">
-                  <q-item-label class="text-h6 text-weight-bolder">
+                  <q-item-label v-if="preloader">
+                    <q-skeleton type="text" />
+                  </q-item-label>
+                  <q-item-label v-else class="text-h6 text-weight-bolder">
                     {{
                       moneyFormat(
                         filteredTransactionThisWeek
@@ -114,7 +120,10 @@
                   <q-icon name="calendar_today" size="md"></q-icon>
                 </q-item-section>
                 <q-item-section class="text-white q-pl-md">
-                  <q-item-label class="text-h6 text-weight-bolder">
+                  <q-item-label v-if="preloader">
+                    <q-skeleton type="text" />
+                  </q-item-label>
+                  <q-item-label v-else class="text-h6 text-weight-bolder">
                     {{
                       moneyFormat(
                         filteredTransactionThisMonth
@@ -140,7 +149,10 @@
                   <q-icon name="bar_chart" size="md"></q-icon>
                 </q-item-section>
                 <q-item-section class="text-white q-pl-md">
-                  <q-item-label class="text-h6 text-weight-bolder">
+                  <q-item-label v-if="preloader">
+                    <q-skeleton type="text" />
+                  </q-item-label>
+                  <q-item-label v-else class="text-h6 text-weight-bolder">
                     {{
                       moneyFormat(
                         filteredTransactionThisYear
@@ -171,6 +183,49 @@
               leave-active-class="animated fadeOutBottomRight slow"
             >
               <q-item
+                v-if="preloader"
+                class="q-py-md"
+                style="cursor: pointer"
+                v-ripple="{ color: 'grey-9' }"
+              >
+                <q-item-section top avatar>
+                  <q-skeleton type="QAvatar" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>
+                    <q-skeleton type="QChip" />
+                  </q-item-label>
+                  <q-item-label caption lines="2">
+                    <q-skeleton type="QBadge" width="150px" />
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side top>
+                  <q-item-label caption>
+                    <q-skeleton type="text" width="150px" />
+                  </q-item-label>
+                  <div>
+                    <q-btn flat round dense ripple icon="edit" color="grey-6" />
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      ripple
+                      color="grey-6"
+                      icon="delete_outline"
+                    />
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      ripple
+                      icon="star_outline"
+                      color="grey-6"
+                    />
+                  </div>
+                </q-item-section>
+              </q-item>
+              <q-item
+                v-else
                 :key="trans.id"
                 :ref="trans.id"
                 class="q-py-md"
@@ -398,7 +453,7 @@
 
 <script>
 import { defineComponent, reactive } from "vue";
-import { mixinMethods, mixinTimer } from "src/mixins";
+import { mixinMethods, mixinTimer, mixinPreloader } from "src/mixins";
 import { useQuasar, date } from "quasar";
 import { mapActions, mapState, mapGetters } from "vuex";
 import { customAlert, check } from "src/assets/scripts/functions";
@@ -406,7 +461,7 @@ import { customAlert, check } from "src/assets/scripts/functions";
 export default defineComponent({
   name: "Budget App",
 
-  mixins: [mixinMethods, mixinTimer],
+  mixins: [mixinMethods, mixinTimer, mixinPreloader],
 
   data() {
     return {
@@ -445,6 +500,7 @@ export default defineComponent({
   },
 
   mounted() {
+    this.startPreloading(this.transactions);
     if (
       this.userDetails.passphrase &&
       !this.transactions.length &&

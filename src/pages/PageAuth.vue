@@ -257,7 +257,7 @@ export default defineComponent({
       ) {
         this.$router.back();
       } else {
-        this.$router.replace(this.$myvar.router.default.afterLogin.url);
+        this.$router.push(this.$myvar.router.default.afterLogin.url);
       }
     },
     togglePassview() {

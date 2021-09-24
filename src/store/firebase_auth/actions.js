@@ -256,16 +256,16 @@ function handleAuthStateChanged({ dispatch }) {
               ) {
                 this.$router.back();
               } else {
-                this.$router.replace(myvar.router.default.afterLogin.url);
+                this.$router.push(myvar.router.default.afterLogin.url);
               }
             } else {
-              this.$router.replace(myvar.router.auth.url);
+              this.$router.push(myvar.router.auth.url);
             }
           }
         } else {
           if (!LocalStorage.has(myvar.localStorage.userDetails))
             await dispatch("logoutUser");
-          this.$router.replace("/");
+          this.$router.push("/");
         }
       } catch (error) {
         console.error("Auth Failure: ", error);

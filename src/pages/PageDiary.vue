@@ -42,7 +42,7 @@
     <q-separator class="divider" color="grey-2" size="10px" />
 
     <q-pull-to-refresh @refresh="refresh">
-      <div v-if="diary.length" class="paperbg">
+      <div v-if="diary.length || preloader" class="paperbg">
         <q-timeline
           color="secondary"
           class="q-pa-lg"
@@ -51,7 +51,29 @@
         >
           <transition-group
             appear
+            v-if="preloader"
             enter-active-class="animated bounceInUp slow"
+            leave-active-class="animated fadeOutBottomRight slow"
+          >
+            <q-timeline-entry
+              v-for="n in 3"
+              :key="'skeleton_' + n"
+              :side="n % 2 == 0 ? 'right' : 'left'"
+              color="secondary"
+              icon="far fa-heart"
+              style="cursor: pointer"
+              v-ripple="{ color: 'grey-9' }"
+            >
+              <template v-slot:title>
+                <q-skeleton type="QChip" />
+              </template>
+              <q-skeleton type="text" />
+            </q-timeline-entry>
+          </transition-group>
+          <transition-group
+            appear
+            v-else
+            enter-active-class="animated fadeIn slow"
             leave-active-class="animated fadeOutBottomRight slow"
           >
             <q-timeline-entry
@@ -75,9 +97,7 @@
                   {{ relativeDate(post.timestamp) }}
                 </div>
               </template>
-              <div>
-                {{ post.content }}
-              </div>
+              {{ post.content }}
               <q-menu context-menu @show="$refs[post.id].$el.click()">
                 <q-list>
                   <q-item clickable v-close-popup @click="toogleLike(post)">
@@ -235,14 +255,14 @@
 <script>
 import { defineComponent } from "vue";
 import { mapState, mapActions } from "vuex";
-import { mixinMethods, mixinTimer } from "src/mixins";
+import { mixinMethods, mixinTimer, mixinPreloader } from "src/mixins";
 import { useQuasar } from "quasar";
 import { customAlert } from "src/assets/scripts/functions";
 
 export default defineComponent({
   name: "Diary",
 
-  mixins: [mixinMethods, mixinTimer],
+  mixins: [mixinMethods, mixinTimer, mixinPreloader],
 
   data() {
     return {
@@ -264,6 +284,7 @@ export default defineComponent({
   },
 
   mounted() {
+    this.startPreloading(this.diary);
     if (this.userDetails.passphrase && !this.diary.length)
       this.firebaseGetAllDiary();
   },
@@ -390,7 +411,7 @@ export default defineComponent({
 .paperbg
   background-color: $grey-1
   background-size: 25px 25px
-  background-image:  repeating-linear-gradient(0deg, $grey-3, $grey-3 1px, $grey-1 1px, $grey-1)
+  background-image:  repeating-linear-gradient(0deg, $grey-3, $grey-3 2px, white 1px, white)
 
 
 .new-post, .new-post
@@ -402,7 +423,7 @@ export default defineComponent({
   border-bottom: 1px solid
   border-color: $grey-4
 
-.q-timeline__content div
+.q-timeline__content
   white-space: pre-line
 
 .no-history

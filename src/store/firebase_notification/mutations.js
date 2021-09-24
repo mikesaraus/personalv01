@@ -12,7 +12,6 @@ function updateNotifications(state, payload) {
       Object.keys(state.notifications[payload.notifId]).length
     ) {
       // notification type exist with value
-      console.log("I am here");
       Object.keys(state.notifications[payload.notifId]).forEach((key) => {
         // check if old key from state does not exist in new payload then delete
         if (!payload.details[key])

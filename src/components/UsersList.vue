@@ -1,12 +1,37 @@
 <template>
   <q-page style="min-height: unset">
-    <q-list v-if="Object.keys(users).length" @mouseleave="userOnHover = null">
+    <q-list
+      v-if="Object.keys(users).length || preloader"
+      @mouseleave="userOnHover = null"
+    >
       <transition-group
         appear
         enter-active-class="animated bounceInLeft slow"
         leave-active-class="animated bounceOutRight slow"
       >
+        <q-item v-ripple clickable v-if="preloader">
+          <q-item-section avatar>
+            <q-avatar round text-color="white" color="grey-6">
+              <q-skeleton type="QAvatar" />
+              <q-badge
+                rounded
+                floating
+                align="middle"
+                class="q-pa-none q-ma-none transparent"
+                style="bottom: -3px; right: -3px; top: unset"
+              >
+                <q-skeleton type="QAvatar" size="10px" />
+              </q-badge>
+            </q-avatar>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>
+              <q-skeleton type="text" />
+            </q-item-label>
+          </q-item-section>
+        </q-item>
         <q-item
+          v-else
           v-ripple
           clickable
           :key="key"
@@ -122,19 +147,23 @@
 
 <script>
 import { customAlert } from "src/assets/scripts/functions";
-import { mixinOtherUserDetails } from "src/mixins";
+import { mixinOtherUserDetails, mixinPreloader } from "src/mixins";
 import { defineComponent } from "vue";
 import { mapGetters, mapActions, mapState } from "vuex";
 
 export default defineComponent({
   name: "Users Page",
 
-  mixins: [mixinOtherUserDetails],
+  mixins: [mixinOtherUserDetails, mixinPreloader],
 
   data() {
     return {
       userOnHover: null,
     };
+  },
+
+  mounted() {
+    this.startPreloading(this.visibleUsers);
   },
 
   computed: {

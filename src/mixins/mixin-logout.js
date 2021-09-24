@@ -19,7 +19,7 @@ export default {
         .catch(() => {
           customAlert("Unknown error!", "negative");
         });
-      this.$router.replace("/");
+      this.$router.push("/");
     },
   },
 };
