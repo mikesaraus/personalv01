@@ -26,7 +26,7 @@ export default {
             : val && val.length;
           setTimeout(() => {
             this.preloader = false;
-          }, 500);
+          }, 1500);
         }
       },
       deep: true,

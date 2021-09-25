@@ -100,7 +100,7 @@
             <q-btn
               round
               ripple
-              size="13px"
+              size="sm"
               color="white"
               icon="delete_sweep"
               text-color="primary"
