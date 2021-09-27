@@ -97,7 +97,9 @@
                   {{ relativeDate(post.timestamp) }}
                 </div>
               </template>
-              {{ post.content }}
+              <q-intersection once transition="scale">
+                {{ post.content }}
+              </q-intersection>
               <q-menu context-menu @show="$refs[post.id].$el.click()">
                 <q-list>
                   <q-item clickable v-close-popup @click="toogleLike(post)">

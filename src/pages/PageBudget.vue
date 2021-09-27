@@ -10,13 +10,9 @@
           bg-grey-3
           text-grey-6
         "
-        v-ripple="{ color: 'primary' }"
       >
         <span class="text-caption" style="vertical-align: super">PHP</span>
-        <span
-          :class="walletBalance >= 0 ? 'text-primary' : 'text-red'"
-          @dblclick="popupDetails"
-        >
+        <span :class="walletBalance >= 0 ? 'text-primary' : 'text-red'">
           {{ moneyFormat(walletBalance) }}
         </span>
         <q-btn
@@ -234,91 +230,97 @@
                 v-ripple="{ color: 'primary' }"
               >
                 <q-item-section top avatar>
-                  <q-avatar
-                    :color="trans.type == 'debit' ? 'positive' : 'negative'"
-                    text-color="white"
-                    :icon="
-                      trans.type == 'debit'
-                        ? 'fas fa-angle-double-up'
-                        : 'fas fa-angle-double-down'
-                    "
-                  />
+                  <q-intersection once transition="scale">
+                    <q-avatar
+                      :color="trans.type == 'debit' ? 'positive' : 'negative'"
+                      text-color="white"
+                      :icon="
+                        trans.type == 'debit'
+                          ? 'fas fa-angle-double-up'
+                          : 'fas fa-angle-double-down'
+                      "
+                    />
+                  </q-intersection>
                 </q-item-section>
 
                 <q-item-section>
-                  <q-item-label>
-                    {{
-                      (trans.type == "debit" ? "+" : "-") +
-                      moneyFormat(trans.money)
-                    }}
-                  </q-item-label>
-                  <q-item-label caption lines="2">
-                    {{ trans.description }}
-                  </q-item-label>
+                  <q-intersection once transition="scale">
+                    <q-item-label>
+                      {{
+                        (trans.type == "debit" ? "+" : "-") +
+                        moneyFormat(trans.money)
+                      }}
+                    </q-item-label>
+                    <q-item-label caption lines="2">
+                      {{ trans.description }}
+                    </q-item-label>
+                  </q-intersection>
                 </q-item-section>
 
                 <q-item-section side top>
-                  <q-item-label caption :key="minuteTimer">
-                    {{ relativeDate(trans.timestamp) }}
-                  </q-item-label>
-                  <div>
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      ripple
-                      icon="edit"
-                      color="grey-6"
-                      @click="popupDetails(trans)"
-                    >
-                      <q-tooltip
-                        anchor="bottom middle"
-                        self="top middle"
-                        :offset="[10, 10]"
-                        :delay="100"
+                  <q-intersection once transition="scale">
+                    <q-item-label caption :key="minuteTimer">
+                      {{ relativeDate(trans.timestamp) }}
+                    </q-item-label>
+                    <div>
+                      <q-btn
+                        flat
+                        round
+                        dense
+                        ripple
+                        icon="edit"
+                        color="grey-6"
+                        @click="popupDetails(trans)"
                       >
-                        Edit
-                      </q-tooltip>
-                    </q-btn>
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      ripple
-                      color="grey-6"
-                      icon="delete_outline"
-                      @click="deleteTransaction(trans)"
-                    >
-                      <q-tooltip
-                        anchor="bottom middle"
-                        self="top middle"
-                        :offset="[10, 10]"
-                        :delay="100"
+                        <q-tooltip
+                          anchor="bottom middle"
+                          self="top middle"
+                          :offset="[10, 10]"
+                          :delay="100"
+                        >
+                          Edit
+                        </q-tooltip>
+                      </q-btn>
+                      <q-btn
+                        flat
+                        round
+                        dense
+                        ripple
+                        color="grey-6"
+                        icon="delete_outline"
+                        @click="deleteTransaction(trans)"
                       >
-                        Delete
-                      </q-tooltip>
-                    </q-btn>
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      ripple
-                      :icon="trans.stared ? 'star' : 'star_outline'"
-                      :color="trans.stared ? 'primary' : 'grey-6'"
-                      @click="
-                        updateTransaction(trans.id, { stared: !trans.stared })
-                      "
-                    >
-                      <q-tooltip
-                        anchor="bottom middle"
-                        self="top middle"
-                        :offset="[10, 10]"
-                        :delay="100"
+                        <q-tooltip
+                          anchor="bottom middle"
+                          self="top middle"
+                          :offset="[10, 10]"
+                          :delay="100"
+                        >
+                          Delete
+                        </q-tooltip>
+                      </q-btn>
+                      <q-btn
+                        flat
+                        round
+                        dense
+                        ripple
+                        :icon="trans.stared ? 'star' : 'star_outline'"
+                        :color="trans.stared ? 'primary' : 'grey-6'"
+                        @click="
+                          updateTransaction(trans.id, { stared: !trans.stared })
+                        "
                       >
-                        Important
-                      </q-tooltip>
-                    </q-btn>
-                  </div>
+                        <q-tooltip
+                          anchor="bottom middle"
+                          self="top middle"
+                          :offset="[10, 10]"
+                          :delay="100"
+                        >
+                          Important
+                        </q-tooltip>
+                      </q-btn>
+                    </div>
+                  </q-intersection>
                 </q-item-section>
               </q-item>
             </transition-group>

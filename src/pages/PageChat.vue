@@ -59,9 +59,10 @@
                   : 'text-grey-9'
               "
             >
-              {{ decryptedMsg[msg.id].plain }}
+              <q-intersection once transition="scale">{{
+                decryptedMsg[msg.id].plain
+              }}</q-intersection>
             </span>
-            <br />
             <div
               class="text-caption"
               :class="
