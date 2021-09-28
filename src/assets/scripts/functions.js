@@ -121,4 +121,24 @@ const regexp = {
 };
 // End of Regular Expressions
 
-export { greetings, base64, check, regexp, customAlert };
+function addLinkHtml(inputText) {
+  let replacedText;
+  // Remove Tags
+  replacedText = inputText.replace(/</gim, "&lt;");
+  //URLs starting with http://, https://, or ftp://
+  const replacePattern1 =
+    /(\b(https?|ftps?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+  replacedText = replacedText.replace(
+    replacePattern1,
+    '<a href="$1" target="_blank">$1</a>'
+  );
+  //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+  const replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+  replacedText = replacedText.replace(
+    replacePattern2,
+    '$1<a href="http://$2" target="_blank">$2</a>'
+  );
+  return replacedText;
+}
+
+export { greetings, base64, check, regexp, customAlert, addLinkHtml };

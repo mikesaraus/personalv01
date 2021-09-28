@@ -59,9 +59,11 @@
                   : 'text-grey-9'
               "
             >
-              <q-intersection once transition="scale">{{
-                decryptedMsg[msg.id].plain
-              }}</q-intersection>
+              <q-intersection
+                once
+                transition="scale"
+                v-html="addLinkHtml(decryptedMsg[msg.id].plain)"
+              ></q-intersection>
             </span>
             <div
               class="text-caption"
@@ -379,8 +381,8 @@ import { defineComponent } from "vue";
 import { useQuasar } from "quasar";
 import { mapState, mapActions, mapGetters } from "vuex";
 import { mixinOtherUserDetails, mixinMethods, mixinTimer } from "src/mixins";
-import { base64, customAlert } from "assets/scripts/functions";
-import { myvar } from "src/boot/firebase";
+import { base64, customAlert, addLinkHtml } from "assets/scripts/functions";
+import { myvar } from "boot/firebase";
 import { collections } from "src/store/firebase_config";
 
 export default defineComponent({
@@ -409,6 +411,7 @@ export default defineComponent({
       decryptedMsg: {},
       firstChat: true,
       clockCountDown: {},
+      addLinkHtml: addLinkHtml,
     };
   },
 
@@ -622,7 +625,7 @@ export default defineComponent({
         .catch((e) => {
           customAlert("Error decrypting message", "negative");
         });
-      return result;
+      return addLinkHtml(result);
     },
     async sendMessage() {
       if (this.newMessage.text) {

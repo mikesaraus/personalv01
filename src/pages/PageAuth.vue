@@ -147,10 +147,10 @@
 
 <script>
 import { date, useQuasar } from "quasar";
-import { base64, check } from "src/assets/scripts/functions";
+import { base64, check } from "assets/scripts/functions";
 import { defineComponent, ref } from "vue";
 import { mapActions, mapState } from "vuex";
-import { customAlert } from "src/assets/scripts/functions";
+import { customAlert } from "assets/scripts/functions";
 import { mixinLogout } from "src/mixins";
 
 export default defineComponent({

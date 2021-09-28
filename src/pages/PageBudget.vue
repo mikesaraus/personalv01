@@ -262,7 +262,7 @@
                     <q-item-label caption :key="minuteTimer">
                       {{ relativeDate(trans.timestamp) }}
                     </q-item-label>
-                    <div>
+                    <div class="float-right">
                       <q-btn
                         flat
                         round
@@ -458,7 +458,7 @@ import { defineComponent, reactive } from "vue";
 import { mixinMethods, mixinTimer, mixinPreloader } from "src/mixins";
 import { useQuasar, date } from "quasar";
 import { mapActions, mapState, mapGetters } from "vuex";
-import { customAlert, check } from "src/assets/scripts/functions";
+import { customAlert, check } from "assets/scripts/functions";
 
 export default defineComponent({
   name: "Budget App",

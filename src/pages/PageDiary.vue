@@ -1,47 +1,47 @@
 <template>
   <q-page ref="pageDiary">
-    <transition
-      appear
-      enter-active-class="animated rubberBand slow"
-      leave-active-class="animated fadeOutUp slow"
-    >
-      <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
-        <div class="col">
-          <q-input
-            v-model="newPostContent"
-            class="new-post"
-            ref="newPostContent"
-            placeholder="What's happening?"
-            counter
-            autogrow
-          >
-            <template v-slot:before>
-              <q-avatar
-                color="primary"
-                text-color="white"
-                size="xl"
-                icon="timeline"
-              />
-            </template>
-          </q-input>
-        </div>
-        <div class="col col-shrink">
-          <q-btn
-            rounded
-            unelevated
-            label="post"
-            class="q-mb-lg"
-            color="primary"
-            :disable="!newPostContent"
-            @click="dialogTitle = true"
-          />
-        </div>
-      </div>
-    </transition>
-
-    <q-separator class="divider" color="grey-2" size="10px" />
-
     <q-pull-to-refresh @refresh="refresh">
+      <transition
+        appear
+        enter-active-class="animated rubberBand slow"
+        leave-active-class="animated fadeOutUp slow"
+      >
+        <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
+          <div class="col">
+            <q-input
+              v-model="newPostContent"
+              class="new-post"
+              ref="newPostContent"
+              placeholder="What's happening?"
+              counter
+              autogrow
+            >
+              <template v-slot:before>
+                <q-avatar
+                  color="primary"
+                  text-color="white"
+                  size="xl"
+                  icon="timeline"
+                />
+              </template>
+            </q-input>
+          </div>
+          <div class="col col-shrink">
+            <q-btn
+              rounded
+              unelevated
+              label="post"
+              class="q-mb-lg"
+              color="primary"
+              :disable="!newPostContent"
+              @click="dialogTitle = true"
+            />
+          </div>
+        </div>
+      </transition>
+
+      <q-separator class="divider" color="grey-2" size="10px" />
+
       <div v-if="diary.length || preloader" class="paperbg">
         <q-timeline
           color="secondary"
@@ -79,7 +79,6 @@
             <q-timeline-entry
               :ref="post.id"
               :key="post.id"
-              style="cursor: pointer"
               v-for="(post, i) in diary"
               @dblclick="toogleLike(post)"
               v-ripple="{ color: 'primary' }"
@@ -98,7 +97,7 @@
                 </div>
               </template>
               <q-intersection once transition="scale">
-                {{ post.content }}
+                <span v-html="addLinkHtml(post.content)"></span>
               </q-intersection>
               <q-menu context-menu @show="$refs[post.id].$el.click()">
                 <q-list>
@@ -259,7 +258,7 @@ import { defineComponent } from "vue";
 import { mapState, mapActions } from "vuex";
 import { mixinMethods, mixinTimer, mixinPreloader } from "src/mixins";
 import { useQuasar } from "quasar";
-import { customAlert } from "src/assets/scripts/functions";
+import { customAlert, addLinkHtml } from "assets/scripts/functions";
 
 export default defineComponent({
   name: "Diary",
@@ -278,6 +277,7 @@ export default defineComponent({
       editPostTitle: "",
       editPostContent: "",
       editPostId: "",
+      addLinkHtml: addLinkHtml,
     };
   },
 
