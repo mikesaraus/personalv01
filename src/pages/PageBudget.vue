@@ -662,7 +662,7 @@ export default defineComponent({
       this.resetNewTransaction();
     },
     updateNewTransactionType() {
-      if (this.newTransaction.money > 0) {
+      if (this.newTransaction.money >= 0) {
         this.newTransaction.type = this.transactionTypes[0];
       } else {
         this.newTransaction.type = this.transactionTypes[1];
