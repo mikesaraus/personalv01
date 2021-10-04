@@ -393,7 +393,6 @@ export default defineComponent({
   data() {
     return {
       $q: useQuasar(),
-      newMsg_NotifAudio: "notification.mp3",
       newMessage: {
         from: "me",
         text: null,
@@ -428,21 +427,21 @@ export default defineComponent({
     )
       this.initializeUserMessages();
     this.newMessage.expiration = this.expiration.min;
-    customAlert(
-      "Secure Encrypted Messages",
-      null,
-      2500,
-      !this.userDetails.passphrase
-        ? "center"
-        : this.$q.screen.lt.sm
-        ? "top"
-        : "bottom-left",
-      {
-        color: "primary",
-        textColor: "white",
-        icon: "lock",
-      }
-    );
+    //  customAlert(
+    //    "Secure Encrypted Messages",
+    //    null,
+    //    2500,
+    //    !this.userDetails.passphrase
+    //      ? "center"
+    //      : this.$q.screen.lt.sm
+    //      ? "top"
+    //      : "bottom-left",
+    //    {
+    //      color: "primary",
+    //      textColor: "white",
+    //      icon: "lock",
+    //    }
+    //  );
   },
 
   computed: {

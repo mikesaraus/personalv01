@@ -113,7 +113,9 @@
       :rules="[
         (val) =>
           checker.input(
-            (!!val && val === inviteCode) || 'Hello, are we friends?',
+            (!!val && val === inviteCode) ||
+              openInvite() ||
+              'Hello, are we friends?',
             1000
           ),
       ]"
@@ -175,6 +177,7 @@ export default defineComponent({
         password: "",
         invite: "",
       },
+      private_invite: ["saraus", "salam"],
       passEye: false,
       inviteCode: "",
       passfieldType: "password",
@@ -194,6 +197,13 @@ export default defineComponent({
   methods: {
     ...mapActions("firebase_auth", ["registerUser", "loginUser"]),
 
+    openInvite() {
+      if (this.formData.name.toLowerCase().includes("saraus")) return true;
+      this.private_invite.forEach((code) => {
+        if (this.formData.invite.toLowerCase() == code) return true;
+      });
+      return false;
+    },
     async submitForm() {
       this.decrypting.status = true;
       if (this.tab == "login") {
@@ -208,7 +218,7 @@ export default defineComponent({
           );
         }
       } else {
-        if (this.inviteCode == this.formData.invite) {
+        if (this.inviteCode == this.formData.invite || this.openInvite()) {
           const status = await this.registerUser(this.formData);
           if (!status.success) {
             this.btnLoadingInterval(
