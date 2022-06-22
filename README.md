@@ -2,6 +2,10 @@
 
 My Personal - Budget and Chat App
 
+Using Quasar Framework and Google Firebase (Realtime Database)
+
+Secure Private Messaging with PGP Encryption and Auto Delete Scheduler
+
 ## Install the dependencies
 
 ```bash
